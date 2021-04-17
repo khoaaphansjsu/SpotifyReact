@@ -89,7 +89,6 @@ async function testAddCollection () {
     const res  = await db.collection('test_Superplaylists').add(testCollection);
     const doc  = await db.collection('test_Users').doc("testUser");
     doc.set(testUser);
-
 }
 
 async function main() {
