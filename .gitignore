@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+./backend/supafy-be393-37de8cca2400.json
+./backend/prod.json
+backend/prod.json
+backend/supafy-be393-37de8cca2400.json
