@@ -19,7 +19,7 @@ app.getUsersCollections('/', (req, res) => {
     const docRef = db.collection('excercises').doc('pushups');
 })
 
-app.addCollection('/addCollection' (req, res) => {
+app.addCollection('/addCollection', (req, res) => {
     console.log("adding a collection", req)
     
 }
