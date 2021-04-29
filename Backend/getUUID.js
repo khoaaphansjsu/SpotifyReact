@@ -26,18 +26,17 @@ saveButton.addEventListener("click", function() {
 
 saveButtonEmail.addEventListener("click", function() {
     const givenEmail = inputEmail.value;
-    const xd = getEmail(givenEmail);
     getEmail(givenEmail);
 })
 
 function getUUID(UUID){
     const promiseUUID = db.collection("superplaylists").doc(UUID).get();
     //promiseUUID.then((result) => {console.log(result.data())});
-    promise.then((result) => {return result.data()});
+    promiseUUID.then((result) => {return result.data()});
 }
 
 function getEmail(email){
     const promise = db.collection("users").doc(email).get();
-    //promise.then((result) => {console.log(promise.data())}); Uncomment for testing
+    //promise.then((result) => {console.log(result.data())}); //Uncomment for testing
     promise.then((result) => {return result.data()});
 }
