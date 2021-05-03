@@ -8,13 +8,14 @@
  * then run with the followinng command. If you don't have a client_id and client_secret yet,
  * create an application on Create an application here: https://developer.spotify.com/my-applications to get them.
  * Make sure you whitelist the correct redirectUri in line 26.
- *
- *     node access-token-server.js "<Client ID>" "<Client Secret>"
+
  *
  *  and visit <http://localhost:8888/login> in your Browser.
  */
  const SpotifyWebApi = require('spotify-web-api-node');
  const express = require('express');
+ const cors = require('cors')
+ var querystring = require('querystring');
  
  const scopes = [
    'ugc-image-upload',
@@ -45,6 +46,8 @@
  });
  
  const app = express();
+ app.use(cors());
+ app.options('*', cors());
  
  app.get('/login', (req, res) => {
    res.redirect(spotifyApi.createAuthorizeURL(scopes));
@@ -64,9 +67,9 @@
    spotifyApi
      .authorizationCodeGrant(code)
      .then(data => {
-       const access_token = data.body['access_token'];
+       const access_token  = data.body['access_token'];
        const refresh_token = data.body['refresh_token'];
-       const expires_in = data.body['expires_in'];
+       const expires_in    = data.body['expires_in'];
  
        spotifyApi.setAccessToken(access_token);
        spotifyApi.setRefreshToken(refresh_token);
@@ -77,8 +80,19 @@
        console.log(
          `Sucessfully retreived access token. Expires in ${expires_in} s.`
        );
-       res.send('Success! You can now close the window.');
- 
+      //  res.send('Success! You can now close the window.');
+      //  res.send(access_token);
+        // we can also pass the token to the browser to make requests from there
+        res['Access-Control-Allow-Origin'] = '*';
+        res['Access-Control-Allow-Credentials']= true;
+        res['Access-Control-Allow-Methods']= 'POST, GET, PUT, DELETE, OPTIONS';
+        res['Access-Control-Allow-Headers']= 'Content-Type';
+
+        res.redirect('http://localhost:3000/#' +
+          querystring.stringify({
+            access_token: access_token,
+            refresh_token: refresh_token
+          }));
        setInterval(async () => {
          const data = await spotifyApi.refreshAccessToken();
          const access_token = data.body['access_token'];
