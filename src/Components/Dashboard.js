@@ -1,4 +1,7 @@
 import React from 'react';
+import {
+  useLocation
+} from "react-router-dom";
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -111,6 +114,18 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Dashboard() {
+  var qs = new URLSearchParams(useLocation().search);
+  // console.log(qs.toString());
+  // console.log(qs.get("access_token"));
+  // console.log(this.props.location.query.access_token)
+  let it = qs.keys();
+  let result = it.next();
+  while (!result.done) {
+    console.log(result.value); // 1 3 5 7 9
+    result = it.next();
+  }
+  console.log("access_token", qs.get("access_token"))
+
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
