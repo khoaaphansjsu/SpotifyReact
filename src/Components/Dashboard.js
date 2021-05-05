@@ -127,13 +127,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-function ImgMediaCard(playlistName) {
+function ImgMediaCard(playlist) {
 
   return (
     <Card style={{maxWidth: 345, display: 'flex', margin: "5px"}}>
       <CardContent>
         <Typography gutterBottom variant="h6" component="h2">
-          {""+playlistName}
+          {""+playlist.name}
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
           Playlist description
@@ -149,7 +149,6 @@ function ImgMediaCard(playlistName) {
 }
 
 
-
 class DashboardComp extends React.Component {
   state = {
     myPlaylists: [],
@@ -157,9 +156,25 @@ class DashboardComp extends React.Component {
     searchWord: "",
     mode: "My Spotify"
   }
+  async getMySpotifyPlaylists() {
+    const access_token = this.props.qs.get("access_token")
+    console.log("using access_token", access_token)
+    let res = await fetch("https://api.spotify.com/v1/me/playlists", {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        "Authorization": "Bearer "+access_token,
+        "Content-Type": "application/json",
+        "Accept": "application/json"},
+    })
+    let data = await res.json();
+    this.setState({myPlaylists: data.items})
+    console.log(data);
+  }
   componentDidMount() {
+    this.getMySpotifyPlaylists();
     this.setState({
-      myPlaylists: ["playlist1", "playlist2", "playlist2", "playlist2" ],
+      myPlaylists: [{name:"playlist1"}, {name:"playlist2"} ],
       searchResults:["result1", "result2"],
     })
   }
@@ -180,7 +195,7 @@ class DashboardComp extends React.Component {
       return this.state.searchResults
     }
     else if(this.state.mode==="My Spotify") {
-      return this.state.myPlaylists.filter(p => {return p.includes(this.state.searchWord)})
+      return this.state.myPlaylists.filter(p => {return p.name.includes(this.state.searchWord)})
     }
     return ["bad state"]
   }
@@ -210,7 +225,7 @@ export default function Dashboard() {
     console.log(result.value); // 1 3 5 7 9
     result = it.next();
   }
-  console.log("access_token", qs.get("access_token"))
+
 
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
