@@ -177,11 +177,9 @@ class DashboardComp extends React.Component {
   }
   getResults() {
     if(this.state.mode==="Public Spotify") {
-      console.log('pub results: ' + this.state.searchResults)
       return this.state.searchResults
     }
     else if(this.state.mode==="My Spotify") {
-      console.log(this.state.searchWord+ ' my results: ' + this.state.myPlaylists.filter(p => {return p.includes(this.state.searchWord)}))
       return this.state.myPlaylists.filter(p => {return p.includes(this.state.searchWord)})
     }
     return ["bad state"]
