@@ -18,6 +18,19 @@ import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Link from '@material-ui/core/Link';
+// cards
+import Card from "@material-ui/core/Card";
+import CardActionArea from "@material-ui/core/CardActionArea";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
+import CardMedia from "@material-ui/core/CardMedia";
+import Button from "@material-ui/core/Button";
+import { red } from "@material-ui/core/colors";
+import FavoriteIcon from "@material-ui/icons/Favorite";
+import ShareIcon from "@material-ui/icons/Share";
+// search bar
+import SearchBar from "material-ui-search-bar";
+
 
 function Copyright() {
   return (
@@ -110,18 +123,81 @@ const useStyles = makeStyles((theme) => ({
   },
   fixedHeight: {
     height: 240,
-  },
+  }
 }));
+
+
+function ImgMediaCard(playlistName) {
+
+  return (
+    <Card style={{maxWidth: 345, display: 'flex', margin: "5px"}}>
+      <CardContent>
+        <Typography gutterBottom variant="h6" component="h2">
+          {""+playlistName}
+        </Typography>
+        <Typography variant="body2" color="textSecondary" component="p">
+          Playlist description
+        </Typography>
+      </CardContent>
+      <CardActions disableSpacing>
+        <IconButton aria-label="add to favorites">
+          <FavoriteIcon />
+        </IconButton>
+      </CardActions>
+    </Card>
+  );
+}
+
+
 
 class DashboardComp extends React.Component {
   state = {
-      
+    myPlaylists: [],
+    searchResults:[],
+    searchWord: "",
+    mode: "My Spotify"
   }
   componentDidMount() {
-    this.setState({})
+    this.setState({
+      myPlaylists: ["playlist1", "playlist2", "playlist2", "playlist2" ],
+      searchResults:["result1", "result2"],
+    })
   }
-  render() {
+  searchSpotifyPlaylists() {
+    console.log("searching spotify playlists")
+  }
+  updateSearch(newSearchWord) {
+    if(this.state.mode==="Public Spotify")
+      this.searchSpotifyPlaylists()
+    else if(this.state.mode==="My Spotify")
+    this.setState({
+      myPlaylists: ["playlist1", "playlist2", "playlist2", "playlist2" ],
+      searchWord: newSearchWord,
+    })
+  }
+  getResults() {
+    if(this.state.mode==="Public Spotify") {
+      console.log('pub results: ' + this.state.searchResults)
+      return this.state.searchResults
+    }
+    else if(this.state.mode==="My Spotify") {
+      console.log(this.state.searchWord+ ' my results: ' + this.state.myPlaylists.filter(p => {return p.includes(this.state.searchWord)}))
+      return this.state.myPlaylists.filter(p => {return p.includes(this.state.searchWord)})
+    }
+    return ["bad state"]
+  }
 
+  render() {
+    return (
+      <>
+      <SearchBar
+        searchWord={this.state.searchWord}
+        onChange={(newValue) => this.setState({ searchWord: newValue })}
+        // onRequestSearch={() => this.updateSearch(this.state.searchWord)}
+      />
+      <Card>{this.getResults().map((pl) => {return ImgMediaCard(pl)})}</Card>
+      </>
+    )
   }
 }
 
@@ -146,7 +222,7 @@ export default function Dashboard() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  const fixedHeightPaper = clsx(classes.paper);
 
   return (
     <div className={classes.root}>
@@ -190,6 +266,7 @@ export default function Dashboard() {
           <Grid container spacing={3}>
             <Grid item xs={12} md={8} lg={9}>
               <Paper className={fixedHeightPaper}>
+                <DashboardComp ></DashboardComp>
               </Paper>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
