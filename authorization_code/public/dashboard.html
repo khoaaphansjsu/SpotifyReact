@@ -6,6 +6,25 @@
     <link rel = "stylesheet" href = "style.css">
     <link rel = "preconnect" href = "https://fonts.gstatic.com">
     <link href = "https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel = "stylesheet">
+
+    <meta name = "viewport" content = "width=device-width, initial-scale = 1.0">
+  </head>
+
+  <body>
+    <h2 class = header>My Dashboard</h2>
     
+    <button class = "logOut" onclick = "logOut()">Log Out</button>
+    <script>
+      function logOut(){
+        //delete auth tokens here
+        //window.localStorage.clear('access');
+        //window.localStorage.clear('refresh');
+        window.localStorage.clear();
+        //redirect to spotify here
+        window.location.replace("https://www.spotify.com/us/");
+        //cannot go back one page
+        window.history.forward(-1);
+      }
+    </script>
   </body>
 </html>
