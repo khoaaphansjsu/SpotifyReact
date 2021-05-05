@@ -113,6 +113,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+class DashboardComp extends React.Component {
+  state = {
+      
+  }
+  componentDidMount() {
+    this.setState({})
+  }
+  render() {
+
+  }
+}
+
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
   // console.log(qs.toString());
