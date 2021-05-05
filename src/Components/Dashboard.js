@@ -27,7 +27,10 @@ import CardMedia from "@material-ui/core/CardMedia";
 import Button from "@material-ui/core/Button";
 import { red } from "@material-ui/core/colors";
 import FavoriteIcon from "@material-ui/icons/Favorite";
+import AddIcon from "@material-ui/icons/Add";
 import ShareIcon from "@material-ui/icons/Share";
+import DehazeIcon from "@material-ui/icons/Dehaze";
+import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 // search bar
 import SearchBar from "material-ui-search-bar";
 
@@ -132,16 +135,16 @@ function ImgMediaCard(playlist) {
   return (
     <Card style={{maxWidth: 345, display: 'flex', margin: "5px"}}>
       <CardContent>
-        <Typography gutterBottom variant="h6" component="h2">
+        <Typography gutterBottom variant="h7" component="h5">
           {""+playlist.name}
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
-          Playlist description
+          Tracks Total: {playlist.tracks.total}
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
         <IconButton aria-label="add to favorites">
-          <FavoriteIcon />
+          <AddIcon />
         </IconButton>
       </CardActions>
     </Card>
@@ -157,7 +160,7 @@ class DashboardComp extends React.Component {
     mode: "My Spotify"
   }
   async getMySpotifyPlaylists() {
-    const access_token = this.props.qs.get("access_token")
+    const access_token = this.props.access_token
     console.log("using access_token", access_token)
     let res = await fetch("https://api.spotify.com/v1/me/playlists", {
       method: 'GET',
@@ -174,7 +177,6 @@ class DashboardComp extends React.Component {
   componentDidMount() {
     this.getMySpotifyPlaylists();
     this.setState({
-      myPlaylists: [{name:"playlist1"}, {name:"playlist2"} ],
       searchResults:["result1", "result2"],
     })
   }
@@ -186,7 +188,6 @@ class DashboardComp extends React.Component {
       this.searchSpotifyPlaylists()
     else if(this.state.mode==="My Spotify")
     this.setState({
-      myPlaylists: ["playlist1", "playlist2", "playlist2", "playlist2" ],
       searchWord: newSearchWord,
     })
   }
@@ -195,6 +196,7 @@ class DashboardComp extends React.Component {
       return this.state.searchResults
     }
     else if(this.state.mode==="My Spotify") {
+      console.log(this.state.myPlaylists)
       return this.state.myPlaylists.filter(p => {return p.name.includes(this.state.searchWord)})
     }
     return ["bad state"]
@@ -214,6 +216,8 @@ class DashboardComp extends React.Component {
   }
 }
 
+
+
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
   // console.log(qs.toString());
@@ -225,7 +229,12 @@ export default function Dashboard() {
     console.log(result.value); // 1 3 5 7 9
     result = it.next();
   }
-
+  const [loggedin, setLoggedin] =                    React.useState(qs.get("access_token")!=null);
+  const [user, setUser] =                            React.useState("defaultUser");
+  const [collections, setCollections] =              React.useState([]);
+  const [current_collection, setCurrentCollection] = React.useState({});
+  const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
+  const [refresh_token, setRefreshToken] =           React.useState("");
 
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
@@ -249,6 +258,7 @@ export default function Dashboard() {
             onClick={handleDrawerOpen}
             className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
           >
+          <DehazeIcon></DehazeIcon>
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
             Dashboard
@@ -268,6 +278,7 @@ export default function Dashboard() {
       >
         <div className={classes.toolbarIcon}>
           <IconButton onClick={handleDrawerClose}>
+            <ArrowBackIosIcon/>
           </IconButton>
         </div>
         <Divider />
@@ -277,13 +288,14 @@ export default function Dashboard() {
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={8} lg={9}>
+            <Grid item xs={12} md={6} lg={9}>
               <Paper className={fixedHeightPaper}>
-                <DashboardComp qs={qs}></DashboardComp>
+                
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} md={6} lg={3}>
               <Paper className={fixedHeightPaper}>
+                <DashboardComp qs={qs} access_token={access_token}></DashboardComp>
               </Paper>
             </Grid>
             <Grid item xs={12}>
