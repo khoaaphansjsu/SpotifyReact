@@ -48,9 +48,14 @@ firebase.initializeApp(firebaseConfig)
 
 
 app.get('/getMyCollections', async (req, res) => {
-    console.log("getMyCollections")
-    const docRef = await db.collection('Users').doc(""+req.userId);
-    res.json(docRef)
+    const userId = req.query.userId;
+    console.log("getMyCollections " + userId)
+    const docRef = await db.collection('users').doc(""+userId).get();
+    let superplaylists = docRef.docs.map( (doc) =>  {
+      console.log(doc.id, '=>', doc.data());
+      return doc.data();
+    });
+    res.json(await Promise.all(superplaylists))
 })
 
 app.get('/addCollection', (req, res) => {

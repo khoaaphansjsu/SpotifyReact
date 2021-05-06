@@ -33,7 +33,9 @@ import DehazeIcon from "@material-ui/icons/Dehaze";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 // search bar
 import SearchBar from "material-ui-search-bar";
+import { FiberSmartRecordSharp } from '@material-ui/icons';
 
+import Login  from "./Login.js";
 
 function Copyright() {
   return (
@@ -217,6 +219,17 @@ class DashboardComp extends React.Component {
 }
 
 
+function getMyCollection(userId) {
+//   fetch("https://localhost:8888/getMyCollections?userId="+userId)
+//     .then(res => {
+//       res.json().then(data => {
+//         console.log(res);
+//         return []
+//       })
+//   }
+//   )
+  return [{name: "collection1"},{name: "collection2"}]
+}
 
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
@@ -229,10 +242,29 @@ export default function Dashboard() {
     console.log(result.value); // 1 3 5 7 9
     result = it.next();
   }
-  const [loggedin, setLoggedin] =                    React.useState(qs.get("access_token")!=null);
-  const [user, setUser] =                            React.useState("defaultUser");
+
+  const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
+  function getCurrentUser(token) {
+    return fetch("https://api.spotify.com/v1/me", {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+          "Authorization": "Bearer "+token,
+          "Content-Type": "application/json",
+          "Accept": "application/json"},
+      }).then(res => {
+        res.json().then(data => {
+          console.log(data)
+          setCollections(getMyCollection(data.email))
+          return data
+        })
+      })
+  }
+
+  // const [user, setUser] =                            React.useState(getCurrentUser(qs.get("access_token")));
+
   const [collections, setCollections] =              React.useState([]);
-  const [current_collection, setCurrentCollection] = React.useState({});
+  const [current_collection, setCurrentCollection] = React.useState({name:"new collection", items:[]});
   const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
   const [refresh_token, setRefreshToken] =           React.useState("");
 
@@ -246,68 +278,72 @@ export default function Dashboard() {
   };
   const fixedHeightPaper = clsx(classes.paper);
 
-  return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
-        <Toolbar className={classes.toolbar}>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
-          >
-          <DehazeIcon></DehazeIcon>
-          </IconButton>
-          <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            Dashboard
-          </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
-            </Badge>
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        variant="permanent"
-        classes={{
-          paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
-        }}
-        open={open}
-      >
-        <div className={classes.toolbarIcon}>
-          <IconButton onClick={handleDrawerClose}>
-            <ArrowBackIosIcon/>
-          </IconButton>
-        </div>
-        <Divider />
-        <Divider />
-      </Drawer>
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={9}>
-              <Paper className={fixedHeightPaper}>
-                
-              </Paper>
+  if(loggedin)
+    return (
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
+          <Toolbar className={classes.toolbar}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+            >
+            <DehazeIcon></DehazeIcon>
+            </IconButton>
+            <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+              Dashboard
+            </Typography>
+            <IconButton color="inherit">
+              <Badge badgeContent={4} color="secondary">
+              </Badge>
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          variant="permanent"
+          classes={{
+            paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
+          }}
+          open={open}
+        >
+          <div className={classes.toolbarIcon}>
+            <IconButton onClick={handleDrawerClose}>
+              <ArrowBackIosIcon/>
+            </IconButton>
+          </div>
+          <Divider />
+          {collections.map(c => {return <Card>{c.name}</Card>})}
+          <Divider />
+        </Drawer>
+        <main className={classes.content}>
+          <div className={classes.appBarSpacer} />
+          <Container maxWidth="lg" className={classes.container}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} lg={9}>
+                <Paper className={fixedHeightPaper}>
+                  
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <Paper className={fixedHeightPaper}>
+                  <DashboardComp qs={qs} access_token={access_token}></DashboardComp>
+                </Paper>
+              </Grid>
+              <Grid item xs={12}>
+                <Paper className={classes.paper}>
+                </Paper>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper className={fixedHeightPaper}>
-                <DashboardComp qs={qs} access_token={access_token}></DashboardComp>
-              </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-              </Paper>
-            </Grid>
-          </Grid>
-          <Box pt={4}>
-            <Copyright />
-          </Box>
-        </Container>
-      </main>
-    </div>
-  );
+            <Box pt={4}>
+              <Copyright />
+            </Box>
+          </Container>
+        </main>
+      </div>
+    );
+  else
+    return <Login />
 }
