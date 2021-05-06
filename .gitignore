@@ -26,3 +26,7 @@ yarn-error.log*
 ./backend/prod.json
 backend/prod.json
 backend/supafy-be393-37de8cca2400.json
+backend/key.pem
+backend/cert.pem
+src/key.pem
+src/cert.pem

@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Login Screen</title>
+
+    <link rel = "stylesheet" href = "style.css">
+    <link rel = "preconnect" href = "https://fonts.gstatic.com">
+    <link href = "https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel = "stylesheet">
+
+    <meta name = "viewport" content = "width=device-width, initial-scale = 1.0">
+
+    <style>
+        h1 {
+            font-size: 500%;
+        }
+        p {
+            font-size: 200%;
+        }
+    </style>
+    
+  </head>
+  <body>
+
+    <h1>Supafy</h1>
+    <p>Made for those who need a quick and easy way of creating music playlists</p>
+    <br>
+    <br>
+    <a href="/login" class = "mainButton">Login with Spotify</a>
+    
+    <script>
+      (function() {
+
+        /**
+         * Obtains parameters from the hash of the URL
+         * @return Object
+         */
+        function getHashParams() {
+          var hashParams = {};
+          var e, r = /([^&;=]+)=?([^&;]*)/g,
+              q = window.location.hash.substring(1);
+          while ( e = r.exec(q)) {
+             hashParams[e[1]] = decodeURIComponent(e[2]);
+          }
+          return hashParams;
+        }
+
+        var params = getHashParams();
+
+        var access_token = params.access_token,
+            refresh_token = params.refresh_token,
+            error = params.error;
+
+        //store auth tokens into storage
+        //window.localStorage.setItem('access', access_token);
+        //window.localStorage.setItem('refresh', refresh_token);
+      })();
+    </script>
+
+  </body>
+</html>

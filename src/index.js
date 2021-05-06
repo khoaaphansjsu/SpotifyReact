@@ -1,12 +1,27 @@
 import React from 'react';
+import {
+  BrowserRouter as Router, 
+  Switch, 
+  Route, 
+  Link,
+  useLocation} from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import Login from './Components/Login.js';
 import reportWebVitals from './reportWebVitals';
+
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+  <Router> 
+      <Route path="/" exact component={App}/>
+      <Route path="/login" exact component={Login}/>
+      {/* <Route path="/profile" exact component={Profile}/>
+      <Route path="/goals" exact component={Goals}/>
+      <Route path="/statistics" exact component={Statistics}/>
+      <Route path="/signup" exact component={SignUp}/> */}
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );
