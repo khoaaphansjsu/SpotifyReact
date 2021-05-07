@@ -263,7 +263,7 @@ export default function Dashboard() {
 
   // const [user, setUser] =                            React.useState(getCurrentUser(qs.get("access_token")));
 
-  const [collections, setCollections] =              React.useState([]);
+  const [collections, setCollections] =              React.useState([{name: "sdfsdf"},{name: "biggestborper"}, {name: "4"}]);
   const [current_collection, setCurrentCollection] = React.useState({name:"new collection", items:[]});
   const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
   const [refresh_token, setRefreshToken] =           React.useState("");
