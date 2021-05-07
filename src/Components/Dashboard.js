@@ -36,6 +36,8 @@ import SearchBar from "material-ui-search-bar";
 import { FiberSmartRecordSharp } from '@material-ui/icons';
 
 import Login  from "./Login.js";
+require("firebase/firestore");
+const firebase = require('firebase-admin');
 
 function Copyright() {
   return (
@@ -163,7 +165,6 @@ class DashboardComp extends React.Component {
   }
   async getMySpotifyPlaylists() {
     const access_token = this.props.access_token
-    console.log("using access_token", access_token)
     let res = await fetch("https://api.spotify.com/v1/me/playlists", {
       method: 'GET',
       credentials: 'same-origin',
@@ -174,7 +175,6 @@ class DashboardComp extends React.Component {
     })
     let data = await res.json();
     this.setState({myPlaylists: data.items})
-    console.log(data);
   }
   componentDidMount() {
     this.getMySpotifyPlaylists();
@@ -183,7 +183,6 @@ class DashboardComp extends React.Component {
     })
   }
   searchSpotifyPlaylists() {
-    console.log("searching spotify playlists")
   }
   updateSearch(newSearchWord) {
     if(this.state.mode==="Public Spotify")
@@ -198,7 +197,6 @@ class DashboardComp extends React.Component {
       return this.state.searchResults
     }
     else if(this.state.mode==="My Spotify") {
-      console.log(this.state.myPlaylists)
       return this.state.myPlaylists.filter(p => {return p.name.includes(this.state.searchWord)})
     }
     return ["bad state"]
@@ -220,14 +218,14 @@ class DashboardComp extends React.Component {
 
 
 function getMyCollection(userId) {
-//   fetch("https://localhost:8888/getMyCollections?userId="+userId)
-//     .then(res => {
-//       res.json().then(data => {
-//         console.log(res);
-//         return []
-//       })
-//   }
-//   )
+  fetch("https://localhost:8888/getMyCollections?userId="+userId)
+    .then(res => {
+      res.json().then(data => {
+        console.log(res);
+        return []
+      })
+  }
+  )
   return [{name: "collection1"},{name: "collection2"}]
 }
 
@@ -239,7 +237,7 @@ export default function Dashboard() {
   let it = qs.keys();
   let result = it.next();
   while (!result.done) {
-    console.log(result.value); // 1 3 5 7 9
+    // console.log(result.value); // 1 3 5 7 9
     result = it.next();
   }
 
@@ -254,7 +252,7 @@ export default function Dashboard() {
           "Accept": "application/json"},
       }).then(res => {
         res.json().then(data => {
-          console.log(data)
+          //console.log(data)
           setCollections(getMyCollection(data.email))
           return data
         })
@@ -262,11 +260,17 @@ export default function Dashboard() {
   }
 
   // const [user, setUser] =                            React.useState(getCurrentUser(qs.get("access_token")));
+  
+  
 
-  const [collections, setCollections] =              React.useState([{name: "sdfsdf"},{name: "biggestborper"}, {name: "4"}]);
+  const [collections, setCollections] =              React.useState([]);        //look at discord
   const [current_collection, setCurrentCollection] = React.useState({name:"new collection", items:[]});
   const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
   const [refresh_token, setRefreshToken] =           React.useState("");
+
+  React.useEffect(() => {
+    getCurrentUser(qs.get("access_token"));
+  }, [])
 
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
