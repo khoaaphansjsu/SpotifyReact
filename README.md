@@ -4,10 +4,15 @@ App for efficient music playlist management
 
 ## Setup   
 
+`npm install`   
+`cd backend/ && npm install`
+
 ### Setup SSL for backend
 
+[install openssl](https://www.xolphin.com/support/OpenSSL/OpenSSL_-_Installation_under_Windows)
+
 Generate a self-signed key and certificate in /src:   
-`cd ./src` 
+`cd ./backend` 
 `openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -config .\noc.cfg `   
 
 
@@ -27,7 +32,7 @@ You will also see any lint errors in the console.
 
 ### Server
 
-`cd ./src`   
-`node ./loginV2.js`   
+`cd ./backend`   
+`node ./backend.js`   
 
 
