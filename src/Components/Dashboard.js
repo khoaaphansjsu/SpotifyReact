@@ -217,16 +217,21 @@ class DashboardComp extends React.Component {
 }
 
 
-function getMyCollection(userId) {
-  fetch("https://localhost:8888/getMyCollections?userId="+userId)
-    .then(res => {
-      res.json().then(data => {
-        console.log(res);
-        return []
-      })
-  }
-  )
-  return [{name: "collection1"},{name: "collection2"}]
+async function getMyCollection(userId) {
+  let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
+  const data = await res.json();
+  console.log(data);
+  return Object.entries(data);
+}
+
+async function getCollection(uuid) {
+  console.log("getting collection uuid ",  uuid)
+  let uuid_segments = uuid._path.segments
+  console.log("getting collection uuid ",  uuid_segments)
+  let res = await fetch("https://localhost:8888/getCollection?uuid="+uuid_segments)
+  const data = await res.json();
+  console.log("got collection ", data);
+  return Object.entries(data);
 }
 
 export default function Dashboard() {
@@ -251,9 +256,10 @@ export default function Dashboard() {
           "Content-Type": "application/json",
           "Accept": "application/json"},
       }).then(res => {
-        res.json().then(data => {
-          //console.log(data)
-          setCollections(getMyCollection(data.email))
+        res.json().then(async data => {
+          let res = await getMyCollection(data.email);
+          console.log("a result", res)
+          setCollections(res)
           return data
         })
       })
@@ -268,6 +274,11 @@ export default function Dashboard() {
   const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
   const [refresh_token, setRefreshToken] =           React.useState("");
 
+  
+  async function selectCollection(c) {
+    let res = await getCollection(c[1]);
+    console.log(res)
+  }
   React.useEffect(() => {
     getCurrentUser(qs.get("access_token"));
   }, [])
@@ -319,7 +330,7 @@ export default function Dashboard() {
             </IconButton>
           </div>
           <Divider />
-          {collections.map(c => {return <Card>{c.name}</Card>})}
+          {collections.map(c => {return <Card onClick={() => {selectCollection(c)}}>{c[0]}</Card>})}
           <Divider />
         </Drawer>
         <main className={classes.content}>
