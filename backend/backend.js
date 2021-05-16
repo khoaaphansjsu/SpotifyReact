@@ -1,12 +1,14 @@
 const express        = require('express')
 const bodyParser     = require('body-parser')
-var firebase         = require('firebase-admin')
 require("firebase/firestore");
-//const admin = require('firebase-admin');
-const firebaseConfig = require('./prod.json');
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.firestore();
+const firebase = require('firebase-admin');
+// admin.initializeApp();
+const serviceAccount = require("./supafy-be393-37de8cca2400.json")
+var firebaseConfig = require("./prod.json")
+firebaseConfig.credential = firebase.credential.cert(serviceAccount)
+firebase.initializeApp(firebaseConfig)
+// Firebase previously initialized using firebase.initializeApp().
+var db = firebase.firestore();
 
 var request = require('request'); // "Request" library
 const fs = require('fs');
@@ -14,10 +16,6 @@ var cors = require('cors');
 const https = require('https');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
-
-// admin.initializeApp();
-
-// const db = admin.firestore();
 
 var client_id = '92e926db9a184761aa10331a81c59ba3'; // Your client id
 var client_secret = '97704c4daa5a44a6b222a76b44f386d8'; // Your secret
@@ -55,22 +53,6 @@ function getEmail(email){
   promise.then((result) => {return result.data()});
 }
 */
-
-app.get('/getMyCollections', async (req, res) => {
-    const userId = req.query.userId;
-    console.log("getMyCollections " + userId)
-    const docRef = await db.collection('users').doc(userId).get();
-    let superplaylists = docRef.docs.map( (doc) =>  {
-      console.log(doc.id, '=>', doc.data());
-      return doc.data();
-    });
-    res.json(await Promise.all(superplaylists))
-})
-
-
-app.get('/addCollection', (req, res) => {
-    console.log("adding a collection", req)
-})
 
 app.get('/login', function(req, res) {
 
@@ -184,6 +166,27 @@ app.get('/refresh_token', function(req, res) {
     }
   });
 });
+
+app.get('/getMyCollections', async (req, res) => {
+  const userId = req.query.userId;
+  console.log("getMyCollections " + userId)
+  const doc = await db.collection('users').doc(userId).get()
+  // console.log(doc.id, '=>', doc);
+  let data = doc.data();
+  console.log(doc.id, '=>', data);
+  res.json(data);
+})
+
+app.get('/addCollection', (req, res) => {
+  console.log("adding a collection", req)
+})
+
+app.get("/getCollection", async (req, res) => {
+  console.log("getting collection " + req.query.uuid)
+  const doc = await db.collection(req.query.uuid[0]).doc(req.query.uuid[1]).get();
+  console.log("getting collection " + doc.data())
+  res.json(doc.data());
+})
 
 console.log('Listening on 8888');
 const httpsServer = https.createServer({
