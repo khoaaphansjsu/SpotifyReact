@@ -1,4 +1,4 @@
-# Getting Started with Create React App
+# Supafy
 
 App for efficient music playlist management
 
