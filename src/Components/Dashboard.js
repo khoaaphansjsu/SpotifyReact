@@ -30,6 +30,9 @@ import FavoriteIcon from "@material-ui/icons/Favorite";
 import AddIcon from "@material-ui/icons/Add";
 import ShareIcon from "@material-ui/icons/Share";
 import DehazeIcon from "@material-ui/icons/Dehaze";
+import DeleteIcon from "@material-ui/icons/Delete";
+import UpIcon from "@material-ui/icons/ExpandLess";
+import DownIcon from "@material-ui/icons/ExpandMore";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 // search bar
 import SearchBar from "material-ui-search-bar";
@@ -146,7 +149,7 @@ function ImgMediaCard(playlist) {
           Tracks Total: {playlist.tracks.total}
         </Typography>
       </CardContent>
-      <CardActions disableSpacing>
+      <CardActions disableSpacing style={{"margin-left": "auto"}}>
         <IconButton aria-label="add to favorites">
           <AddIcon />
         </IconButton>
@@ -191,6 +194,47 @@ async function searchSpotifyPlaylists(access_token, keyword) {
   console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
 }
 
+function collectionCard(musicItem) {
+  console.log("music item " + musicItem.name)
+  let info = "";
+  let artisStuff = "";
+  if(musicItem.tracks) {
+    let artistStuff = ""
+    info = 
+      (<Typography variant="body2" color="textSecondary" component="p">
+        Tracks Total: {musicItem.tracks.total}
+      </Typography>)
+  }
+  if(musicItem.isArtist) {
+    artisStuff = (
+      <>
+      <IconButton aria-label="add to favorites">
+        <UpIcon />
+      </IconButton>
+      <IconButton aria-label="add to favorites">
+        <DownIcon />
+      </IconButton>
+      </>
+    )
+  }
+  return (
+    <Card style={{maxWidth: 345, display: 'flex', margin: "5px"}}>
+      <CardContent>
+        <Typography gutterBottom variant="h7" component="h5">
+          {""+musicItem.name}
+        </Typography>
+        {info}
+      </CardContent>
+      <CardActions disableSpacing disableSpacing style={{"margin-left": "auto"}}>
+        {artisStuff}
+        <IconButton aria-label="add to favorites">
+          <DeleteIcon />
+        </IconButton>
+      </CardActions>
+    </Card>
+  );
+}
+
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
   let it = qs.keys();
@@ -219,10 +263,16 @@ export default function Dashboard() {
   }
 
   const [collections, setCollections] =              React.useState([]);        //look at discord
-  const [current_collection, setCurrentCollection] = React.useState({name:"new collection", items:[]});
+  const [current_collection, setCurrentCollection] = React.useState(
+    {name:"new collection", items:[
+      {name:"test playlist", tracks:{total:5}},
+      {name:"test artist",   tracks:{total:5}, isArtist: true},
+      {name:"test song"},
+    ]}
+  );
   const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
   const [refresh_token, setRefreshToken] =           React.useState("");
-
+  // search component
   const [ myPlaylists, setMyPlaylists] =      React.useState([]);
   const [ searchResults, setSearchResults ] = React.useState([]);
   const [ searchWord, setSearchWord ] =       React.useState("");
@@ -321,12 +371,16 @@ export default function Dashboard() {
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6} lg={9}>
+              <Grid item xs={12} md={6} lg={6}>
                 <Paper className={fixedHeightPaper}>
-                  
+                  <Typography gutterBottom variant="h7" component="h5">
+                    {""+current_collection.name}
+                  </Typography>
+                  {current_collection.items.map(p=>{return collectionCard(p)})}
+                  <Button>Export</Button>
                 </Paper>
               </Grid>
-              <Grid item xs={12} md={6} lg={3}>
+              <Grid item xs={12} md={6} lg={6}>
                 <Paper className={fixedHeightPaper}>
                   {SearchArea()}
                 </Paper>
