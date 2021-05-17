@@ -205,7 +205,7 @@ function collectionCard(musicItem) {
         Tracks Total: {musicItem.tracks.total}
       </Typography>)
   }
-  if(musicItem.isArtist) {
+  if(musicItem.topSongsNumber) {
     artisStuff = (
       <>
       <IconButton aria-label="add to favorites">
@@ -266,7 +266,7 @@ export default function Dashboard() {
   const [current_collection, setCurrentCollection] = React.useState(
     {name:"new collection", items:[
       {name:"test playlist", tracks:{total:5}},
-      {name:"test artist",   tracks:{total:5}, isArtist: true},
+      {name:"test artist",   tracks:{total:10}, topSongsNumber: 10},
       {name:"test song"},
     ]}
   );
