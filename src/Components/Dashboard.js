@@ -155,67 +155,20 @@ function ImgMediaCard(playlist) {
   );
 }
 
-
-class DashboardComp extends React.Component {
-  state = {
-    myPlaylists: [],
-    searchResults:[],
-    searchWord: "",
-    mode: "My Spotify"
-  }
-  async getMySpotifyPlaylists() {
-    const access_token = this.props.access_token
-    let res = await fetch("https://api.spotify.com/v1/me/playlists", {
-      method: 'GET',
-      credentials: 'same-origin',
-      headers: {
-        "Authorization": "Bearer "+access_token,
-        "Content-Type": "application/json",
-        "Accept": "application/json"},
-    })
-    let data = await res.json();
-    this.setState({myPlaylists: data.items})
-  }
-  componentDidMount() {
-    this.getMySpotifyPlaylists();
-    this.setState({
-      searchResults:["result1", "result2"],
-    })
-  }
-  searchSpotifyPlaylists() {
-  }
-  updateSearch(newSearchWord) {
-    if(this.state.mode==="Public Spotify")
-      this.searchSpotifyPlaylists()
-    else if(this.state.mode==="My Spotify")
-    this.setState({
-      searchWord: newSearchWord,
-    })
-  }
-  getResults() {
-    if(this.state.mode==="Public Spotify") {
-      return this.state.searchResults
-    }
-    else if(this.state.mode==="My Spotify") {
-      return this.state.myPlaylists.filter(p => {return p.name.includes(this.state.searchWord)})
-    }
-    return ["bad state"]
-  }
-
-  render() {
-    return (
-      <>
-      <SearchBar
-        searchWord={this.state.searchWord}
-        onChange={(newValue) => this.setState({ searchWord: newValue })}
-        // onRequestSearch={() => this.updateSearch(this.state.searchWord)}
-      />
-      <Card>{this.getResults().map((pl) => {return ImgMediaCard(pl)})}</Card>
-      </>
-    )
-  }
+async function getMySpotifyPlaylists(access_token) {
+  let res = await fetch("https://api.spotify.com/v1/me/playlists", {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      "Authorization": "Bearer "+access_token,
+      "Content-Type": "application/json",
+      "Accept": "application/json"},
+  })
+  let data = await res.json();
+  if(data.items)
+    return data.items
+  return []
 }
-
 
 async function getMyCollection(userId) {
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
@@ -234,15 +187,15 @@ async function getCollection(uuid) {
   return Object.entries(data);
 }
 
+async function searchSpotifyPlaylists(access_token, keyword) {
+  console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
+}
+
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
-  // console.log(qs.toString());
-  // console.log(qs.get("access_token"));
-  // console.log(this.props.location.query.access_token)
   let it = qs.keys();
   let result = it.next();
   while (!result.done) {
-    // console.log(result.value); // 1 3 5 7 9
     result = it.next();
   }
 
@@ -265,22 +218,26 @@ export default function Dashboard() {
       })
   }
 
-  // const [user, setUser] =                            React.useState(getCurrentUser(qs.get("access_token")));
-  
-  
-
   const [collections, setCollections] =              React.useState([]);        //look at discord
   const [current_collection, setCurrentCollection] = React.useState({name:"new collection", items:[]});
   const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
   const [refresh_token, setRefreshToken] =           React.useState("");
 
-  
+  const [ myPlaylists, setMyPlaylists] =      React.useState([]);
+  const [ searchResults, setSearchResults ] = React.useState([]);
+  const [ searchWord, setSearchWord ] =       React.useState("");
+  const [ mode, setMode ] =                   React.useState("My Spotify");
+
   async function selectCollection(c) {
     let res = await getCollection(c[1]);
     console.log(res)
   }
-  React.useEffect(() => {
+  React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
+    let data = await getMySpotifyPlaylists(access_token);
+    console.log("got my spotify playlists " + data);
+    setMyPlaylists(data);
+    setSearchResults(["result1", "result2"]);
   }, [])
 
   const classes = useStyles();
@@ -292,6 +249,33 @@ export default function Dashboard() {
     setOpen(false);
   };
   const fixedHeightPaper = clsx(classes.paper);
+
+  function updateSearch() {
+    if(mode==="Public Spotify")
+      searchSpotifyPlaylists(access_token, searchWord)
+  }
+  function getResults() {
+    if(mode==="Public Spotify") {
+      return searchResults
+    }
+    else if(mode==="My Spotify") {
+      return myPlaylists.filter(p => {return p.name.includes(searchWord)})
+    }
+    return ["bad state"]
+  }
+
+  function SearchArea() {
+    return (
+      <>
+      <SearchBar
+        searchWord={searchWord}
+        onChange={(newValue) => setSearchWord(newValue)}
+        onSubmit={() => updateSearch()}
+      />
+      <Card>{getResults().map((pl) => {return ImgMediaCard(pl)})}</Card>
+      </>
+    )
+  }
 
   if(loggedin)
     return (
@@ -344,7 +328,7 @@ export default function Dashboard() {
               </Grid>
               <Grid item xs={12} md={6} lg={3}>
                 <Paper className={fixedHeightPaper}>
-                  <DashboardComp qs={qs} access_token={access_token}></DashboardComp>
+                  {SearchArea()}
                 </Paper>
               </Grid>
               <Grid item xs={12}>
