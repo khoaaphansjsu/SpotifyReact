@@ -191,27 +191,8 @@ app.get('/getMyCollections', async (req, res) => {
   // res.json(data);
 })
 
-//add collection to database
 app.get('/addCollection', (req, res) => {
-  const userId = req.query.userId
-  const collection = req.query.collectionName
-  const toAdd = req.query.thingToAdd
   console.log("adding a collection", req)
-  db.collection('users').doc(userId).collection('super').doc(collection).update(
-    {links:
-            firebase.firestore.FieldValue.arrayUnion(toAdd)
-    })
-})
-
-//remove collection from database
-app.get('/removeCollection', (req, res) => {
-  const userId = req.query.userId
-  const collection = req.query.collectionName
-  const toRemove = req.query.thingToRemove
-  db.collection('users').doc(userId).collection('super').doc(collection).update(
-    {links:
-      firebase.firestore.FieldValue.arrayRemove(toRemove)
-    })
 })
 
 function add(email, collectionName, thingToAdd) {
