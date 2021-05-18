@@ -181,7 +181,7 @@ async function getMyCollection(userId) {
   return Object.entries(data);
 }
 
-async function addCollection(userId) {
+async function addCollection(userId, collectionName, thingToadd) {
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
 }
 
