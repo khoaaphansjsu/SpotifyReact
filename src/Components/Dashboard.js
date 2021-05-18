@@ -301,6 +301,17 @@ export default function Dashboard() {
     setSearchResults(["result1", "result2"]);
   }, [])
 
+  async function logOut(){
+    //delete auth tokens here
+    //window.localStorage.clear('access');
+    //window.localStorage.clear('refresh');
+    window.localStorage.clear();
+    //redirect to spotify here
+    window.location.replace("https://www.spotify.com/us/");
+    //cannot go back one page
+    window.history.forward(-1);
+  }
+
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
@@ -356,8 +367,8 @@ export default function Dashboard() {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Dashboard
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
+            <IconButton color="inherit" onClick={logOut()}>
+              <Badge badgeContent={"log out"} color="secondary">
               </Badge>
             </IconButton>
           </Toolbar>
