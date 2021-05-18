@@ -262,16 +262,16 @@ export default function Dashboard() {
       })
   }
 
-  const [collections, setCollections] =              React.useState([]);        //look at discord
-  const [current_collection, setCurrentCollection] = React.useState(
+  const [ collections, setCollections] =              React.useState([]);        //look at discord
+  const [ current_collection, setCurrentCollection] = React.useState(
     {name:"new collection", items:[
       {name:"test playlist", tracks:{total:5}},
       {name:"test artist",   tracks:{total:10}, topSongsNumber: 10},
       {name:"test song"},
     ]}
   );
-  const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
-  const [refresh_token, setRefreshToken] =           React.useState("");
+  const [ access_token, setAccessToken] =             React.useState(qs.get("access_token"));
+  const [ refresh_token, setRefreshToken] =           React.useState("");
   // search component
   const [ myPlaylists, setMyPlaylists] =      React.useState([]);
   const [ searchResults, setSearchResults ] = React.useState([]);
