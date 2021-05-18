@@ -174,10 +174,15 @@ async function getMySpotifyPlaylists(access_token) {
 }
 
 async function getMyCollection(userId) {
+  console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
   const data = await res.json();
   console.log(data);
   return Object.entries(data);
+}
+
+async function addCollection(userId) {
+  let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
 }
 
 async function getCollection(uuid) {
@@ -280,7 +285,7 @@ export default function Dashboard() {
 
   async function selectCollection(c) {
     let res = await getCollection(c[1]);
-    console.log(res)
+    console.log("printing" + res)
   }
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));

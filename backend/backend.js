@@ -16,6 +16,7 @@ var cors = require('cors');
 const https = require('https');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+const { CompareArrowsOutlined } = require('@material-ui/icons');
 
 var client_id = '92e926db9a184761aa10331a81c59ba3'; // Your client id
 var client_secret = '97704c4daa5a44a6b222a76b44f386d8'; // Your secret
@@ -170,16 +171,37 @@ app.get('/refresh_token', function(req, res) {
 app.get('/getMyCollections', async (req, res) => {
   const userId = req.query.userId;
   console.log("getMyCollections " + userId)
-  const doc = await db.collection('users').doc(userId).get()
+  var result
+  const exercisesRef = await db.collection("users").doc(userId).collection('super').get();
+  let exercises = await exercisesRef.docs.map( async (doc) => {
+    let res = await doc.data()
+    res.id = doc.id;
+    console.log(res);
+    return res;
+  } )
+  result = await Promise.all(exercises)
+  console.log("promises" + result);
+  res.json(result);
+  console.log("promises" + Promise.all(exercises));
+
+  // const doc = await db.collection('users').doc('ularavind@hotmail.com').get()
   // console.log(doc.id, '=>', doc);
-  let data = doc.data();
-  console.log(doc.id, '=>', data);
-  res.json(data);
+  // let data = doc.data();
+  // console.log(doc.id, '=>', data);
+  // res.json(data);
 })
 
 app.get('/addCollection', (req, res) => {
   console.log("adding a collection", req)
 })
+
+function add(email, collectionName, thingToAdd) {
+  const userId = req.query.userId;
+  db.collection('users').doc(email).collection('super').doc(collectionName).update(
+  {links:
+          firebase.firestore.FieldValue.arrayUnion(thingToAdd)
+  })
+}
 
 app.get("/getCollection", async (req, res) => {
   console.log("getting collection " + req.query.uuid)
