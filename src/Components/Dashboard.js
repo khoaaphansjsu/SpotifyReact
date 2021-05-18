@@ -182,8 +182,14 @@ async function getMyCollection(userId) {
 }
 
 async function addCollection(userId, collectionName, thingToadd) {
-  let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
+  let res = await fetch("https://localhost:8888/addCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
 }
+
+async function removeCollection(userId, collectionName, thingToRemove) {
+  let res = await fetch("https://localhost:8888/removeCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToRemove)
+}
+
+
 
 async function getCollection(uuid) {
   console.log("getting collection uuid ",  uuid)
