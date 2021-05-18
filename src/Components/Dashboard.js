@@ -367,7 +367,7 @@ export default function Dashboard() {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Dashboard
             </Typography>
-            <IconButton color="inherit" onClick={logOut()}>
+            <IconButton color="inherit" onClick={() => logOut()}>
               <Badge badgeContent={"log out"} color="secondary">
               </Badge>
             </IconButton>
