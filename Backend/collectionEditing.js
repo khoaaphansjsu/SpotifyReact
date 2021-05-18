@@ -35,44 +35,58 @@ function getEmail(email){
     promise.then((result) => { dataLOL = result.data()});
 }
 
-function addArtistsToCollection(UUID, thingToAdd) {
-    db.collection('superplaylists').doc(UUID).update(
-        {artists: 
+function add(email, collectionName, thingToAdd) {
+    db.collection('users').doc(email).collection('super').doc(collectionName).update(
+    {links:
             firebase.firestore.FieldValue.arrayUnion(thingToAdd)
-        })
+    })
 }
 
-function addPlaylistsToCollection(UUID, thingToAdd) {
-    db.collection('superplaylists').doc(UUID).update(
-        {playlists:
-            firebase.firestore.FieldValue.arrayUnion(thingToAdd)
-        })
-}
-
-function addSongsToCollection(UUID, thingToAdd) {
-    db.collection('superplaylists').doc(UUID).update(
-        {songs:
-            firebase.firestore.FieldValue.arrayUnion(thingToAdd)
-        })
-}
-
-function removeArtistsFromCollection(UUID, thingToRemove) {
-    db.collection('superplaylists').doc(UUID).update(
-        {artists:
+function remove(email, collectionName, thingToAdd) {
+    db.collection('users').doc(email).collection('super').doc(collectionName).update(
+        {links:
             firebase.firestore.FieldValue.arrayRemove(thingToRemove)
         })
 }
 
-function removePlaylistsFromCollection(UUID, thingToRemove) {
-    db.collection('superplaylists').doc(UUID).update(
-        {playlists:
-            firebase.firestore.FieldValue.arrayRemove(thingToRemove)
-        })
-}
+// function addArtistsToCollection(UUID, thingToAdd) {
+//     db.collection('superplaylists').doc(UUID).update(
+//         {artists: 
+//             firebase.firestore.FieldValue.arrayUnion(thingToAdd)
+//         })
+// }
 
-function removeSongsFromCollection(UUID, thingToRemove) {
-    db.collection('superplaylists').doc(UUID).update(
-        {songs:
-            firebase.firestore.FieldValue.arrayRemove(thingToRemove)
-        })
-}
+// function addPlaylistsToCollection(UUID, thingToAdd) {
+//     db.collection('superplaylists').doc(UUID).update(
+//         {playlists:
+//             firebase.firestore.FieldValue.arrayUnion(thingToAdd)
+//         })
+// }
+
+// function addSongsToCollection(UUID, thingToAdd) {
+//     db.collection('superplaylists').doc(UUID).update(
+//         {songs:
+//             firebase.firestore.FieldValue.arrayUnion(thingToAdd)
+//         })
+// }
+
+// function removeArtistsFromCollection(UUID, thingToRemove) {
+//     db.collection('superplaylists').doc(UUID).update(
+//         {artists:
+//             firebase.firestore.FieldValue.arrayRemove(thingToRemove)
+//         })
+// }
+
+// function removePlaylistsFromCollection(UUID, thingToRemove) {
+//     db.collection('superplaylists').doc(UUID).update(
+//         {playlists:
+//             firebase.firestore.FieldValue.arrayRemove(thingToRemove)
+//         })
+// }
+
+// function removeSongsFromCollection(UUID, thingToRemove) {
+//     db.collection('superplaylists').doc(UUID).update(
+//         {songs:
+//             firebase.firestore.FieldValue.arrayRemove(thingToRemove)
+//         })
+// }
