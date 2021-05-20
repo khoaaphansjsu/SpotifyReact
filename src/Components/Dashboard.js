@@ -30,6 +30,9 @@ import FavoriteIcon from "@material-ui/icons/Favorite";
 import AddIcon from "@material-ui/icons/Add";
 import ShareIcon from "@material-ui/icons/Share";
 import DehazeIcon from "@material-ui/icons/Dehaze";
+import DeleteIcon from "@material-ui/icons/Delete";
+import UpIcon from "@material-ui/icons/ExpandLess";
+import DownIcon from "@material-ui/icons/ExpandMore";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 // search bar
 import SearchBar from "material-ui-search-bar";
@@ -146,7 +149,7 @@ function ImgMediaCard(playlist) {
           Tracks Total: {playlist.tracks.total}
         </Typography>
       </CardContent>
-      <CardActions disableSpacing>
+      <CardActions disableSpacing style={{"margin-left": "auto"}}>
         <IconButton aria-label="add to favorites">
           <AddIcon />
         </IconButton>
@@ -155,74 +158,38 @@ function ImgMediaCard(playlist) {
   );
 }
 
-
-class DashboardComp extends React.Component {
-  state = {
-    myPlaylists: [],
-    searchResults:[],
-    searchWord: "",
-    mode: "My Spotify"
-  }
-  async getMySpotifyPlaylists() {
-    const access_token = this.props.access_token
-    let res = await fetch("https://api.spotify.com/v1/me/playlists", {
-      method: 'GET',
-      credentials: 'same-origin',
-      headers: {
-        "Authorization": "Bearer "+access_token,
-        "Content-Type": "application/json",
-        "Accept": "application/json"},
-    })
-    let data = await res.json();
-    this.setState({myPlaylists: data.items})
-  }
-  componentDidMount() {
-    this.getMySpotifyPlaylists();
-    this.setState({
-      searchResults:["result1", "result2"],
-    })
-  }
-  searchSpotifyPlaylists() {
-  }
-  updateSearch(newSearchWord) {
-    if(this.state.mode==="Public Spotify")
-      this.searchSpotifyPlaylists()
-    else if(this.state.mode==="My Spotify")
-    this.setState({
-      searchWord: newSearchWord,
-    })
-  }
-  getResults() {
-    if(this.state.mode==="Public Spotify") {
-      return this.state.searchResults
-    }
-    else if(this.state.mode==="My Spotify") {
-      return this.state.myPlaylists.filter(p => {return p.name.includes(this.state.searchWord)})
-    }
-    return ["bad state"]
-  }
-
-  render() {
-    return (
-      <>
-      <SearchBar
-        searchWord={this.state.searchWord}
-        onChange={(newValue) => this.setState({ searchWord: newValue })}
-        // onRequestSearch={() => this.updateSearch(this.state.searchWord)}
-      />
-      <Card>{this.getResults().map((pl) => {return ImgMediaCard(pl)})}</Card>
-      </>
-    )
-  }
+async function getMySpotifyPlaylists(access_token) {
+  let res = await fetch("https://api.spotify.com/v1/me/playlists", {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      "Authorization": "Bearer "+access_token,
+      "Content-Type": "application/json",
+      "Accept": "application/json"},
+  })
+  let data = await res.json();
+  if(data.items)
+    return data.items
+  return []
 }
 
-
 async function getMyCollection(userId) {
+  console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
   const data = await res.json();
   console.log(data);
   return Object.entries(data);
 }
+
+async function addCollection(userId, collectionName, thingToadd) {
+  let res = await fetch("https://localhost:8888/addCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
+}
+
+async function removeCollection(userId, collectionName, thingToRemove) {
+  let res = await fetch("https://localhost:8888/removeCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToRemove)
+}
+
+
 
 async function getCollection(uuid) {
   console.log("getting collection uuid ",  uuid)
@@ -234,15 +201,56 @@ async function getCollection(uuid) {
   return Object.entries(data);
 }
 
+async function searchSpotifyPlaylists(access_token, keyword) {
+  console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
+}
+
+function collectionCard(musicItem) {
+  console.log("music item " + musicItem.name)
+  let info = "";
+  let artisStuff = "";
+  if(musicItem.tracks) {
+    let artistStuff = ""
+    info = 
+      (<Typography variant="body2" color="textSecondary" component="p">
+        Tracks Total: {musicItem.tracks.total}
+      </Typography>)
+  }
+  if(musicItem.topSongsNumber) {
+    artisStuff = (
+      <>
+      <IconButton aria-label="add to favorites">
+        <UpIcon />
+      </IconButton>
+      <IconButton aria-label="add to favorites">
+        <DownIcon />
+      </IconButton>
+      </>
+    )
+  }
+  return (
+    <Card style={{maxWidth: 345, display: 'flex', margin: "5px"}}>
+      <CardContent>
+        <Typography gutterBottom variant="h7" component="h5">
+          {""+musicItem.name}
+        </Typography>
+        {info}
+      </CardContent>
+      <CardActions disableSpacing disableSpacing style={{"margin-left": "auto"}}>
+        {artisStuff}
+        <IconButton aria-label="add to favorites">
+          <DeleteIcon />
+        </IconButton>
+      </CardActions>
+    </Card>
+  );
+}
+
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
-  // console.log(qs.toString());
-  // console.log(qs.get("access_token"));
-  // console.log(this.props.location.query.access_token)
   let it = qs.keys();
   let result = it.next();
   while (!result.done) {
-    // console.log(result.value); // 1 3 5 7 9
     result = it.next();
   }
 
@@ -265,23 +273,44 @@ export default function Dashboard() {
       })
   }
 
-  // const [user, setUser] =                            React.useState(getCurrentUser(qs.get("access_token")));
-  
-  
+  const [ collections, setCollections] =              React.useState([]);        //look at discord
+  const [ current_collection, setCurrentCollection] = React.useState(
+    {name:"new collection", items:[
+      {name:"test playlist", tracks:{total:5}},
+      {name:"test artist",   tracks:{total:10}, topSongsNumber: 10},
+      {name:"test song"},
+    ]}
+  );
+  const [ access_token, setAccessToken] =             React.useState(qs.get("access_token"));
+  const [ refresh_token, setRefreshToken] =           React.useState("");
+  // search component
+  const [ myPlaylists, setMyPlaylists] =      React.useState([]);
+  const [ searchResults, setSearchResults ] = React.useState([]);
+  const [ searchWord, setSearchWord ] =       React.useState("");
+  const [ mode, setMode ] =                   React.useState("My Spotify");
 
-  const [collections, setCollections] =              React.useState([]);        //look at discord
-  const [current_collection, setCurrentCollection] = React.useState({name:"new collection", items:[]});
-  const [access_token, setAccessToken] =             React.useState(qs.get("access_token"));
-  const [refresh_token, setRefreshToken] =           React.useState("");
-
-  
   async function selectCollection(c) {
     let res = await getCollection(c[1]);
-    console.log(res)
+    console.log("printing" + res)
   }
-  React.useEffect(() => {
+  React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
+    let data = await getMySpotifyPlaylists(access_token);
+    console.log("got my spotify playlists " + data);
+    setMyPlaylists(data);
+    setSearchResults(["result1", "result2"]);
   }, [])
+
+  async function logOut(){
+    //delete auth tokens here
+    //window.localStorage.clear('access');
+    //window.localStorage.clear('refresh');
+    window.localStorage.clear();
+    //redirect to spotify here
+    window.location.replace("https://www.spotify.com/us/");
+    //cannot go back one page
+    window.history.forward(-1);
+  }
 
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
@@ -292,6 +321,33 @@ export default function Dashboard() {
     setOpen(false);
   };
   const fixedHeightPaper = clsx(classes.paper);
+
+  function updateSearch() {
+    if(mode==="Public Spotify")
+      searchSpotifyPlaylists(access_token, searchWord)
+  }
+  function getResults() {
+    if(mode==="Public Spotify") {
+      return searchResults
+    }
+    else if(mode==="My Spotify") {
+      return myPlaylists.filter(p => {return p.name.includes(searchWord)})
+    }
+    return ["bad state"]
+  }
+
+  function SearchArea() {
+    return (
+      <>
+      <SearchBar
+        searchWord={searchWord}
+        onChange={(newValue) => setSearchWord(newValue)}
+        onSubmit={() => updateSearch()}
+      />
+      <Card>{getResults().map((pl) => {return ImgMediaCard(pl)})}</Card>
+      </>
+    )
+  }
 
   if(loggedin)
     return (
@@ -311,8 +367,8 @@ export default function Dashboard() {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Dashboard
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
+            <IconButton color="inherit" onClick={() => logOut()}>
+              <Badge badgeContent={"log out"} color="secondary">
               </Badge>
             </IconButton>
           </Toolbar>
@@ -337,14 +393,18 @@ export default function Dashboard() {
           <div className={classes.appBarSpacer} />
           <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6} lg={9}>
+              <Grid item xs={12} md={6} lg={6}>
                 <Paper className={fixedHeightPaper}>
-                  
+                  <Typography gutterBottom variant="h7" component="h5">
+                    {""+current_collection.name}
+                  </Typography>
+                  {current_collection.items.map(p=>{return collectionCard(p)})}
+                  <Button>Export</Button>
                 </Paper>
               </Grid>
-              <Grid item xs={12} md={6} lg={3}>
+              <Grid item xs={12} md={6} lg={6}>
                 <Paper className={fixedHeightPaper}>
-                  <DashboardComp qs={qs} access_token={access_token}></DashboardComp>
+                  {SearchArea()}
                 </Paper>
               </Grid>
               <Grid item xs={12}>

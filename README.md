@@ -1,4 +1,4 @@
-# Getting Started with Create React App
+# Supafy
 
 App for efficient music playlist management
 
@@ -18,7 +18,7 @@ Generate a self-signed key and certificate in /src:
 
 ## Run
 
-In the project directory, you can run:
+Start a clinet and a server. Note: Privacy Badger browser plugin blocks spotify api calls, so disable it if you have it.
 
 ### Client
 
