@@ -172,17 +172,17 @@ app.get('/getMyCollections', async (req, res) => {
   const userId = req.query.userId;
   console.log("getMyCollections " + userId)
   var result
-  const exercisesRef = await db.collection("users").doc(userId).collection('super').get();
-  let exercises = await exercisesRef.docs.map( async (doc) => {
-    let res = await doc.data()
+  const superplaylistsRef = await db.collection("users").doc(userId).collection('super').get();
+  let superplaylists = await superplaylistsRef.docs.map( async (doc) => {
+    let res = {};
     res.id = doc.id;
+    res.items = await doc.data();
     console.log(res);
     return res;
   } )
-  result = await Promise.all(exercises)
+  result = await Promise.all(superplaylists)
   console.log("promises" + result);
-  res.json(result);
-  console.log("promises" + Promise.all(exercises));
+  res.send(result);
 
   // const doc = await db.collection('users').doc('ularavind@hotmail.com').get()
   // console.log(doc.id, '=>', doc);
