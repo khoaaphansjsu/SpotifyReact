@@ -31,5 +31,7 @@ backend/cert.pem
 src/key.pem
 src/cert.pem
 
-# false mf backend
+# SCP 6969: false mf backend 
+# Object Class: Euclid
+# Containment Procedures: DO NOT REMOVE OR COMMENT OUT THE FOLLOWING LINE UNDER NO CIRCUMSTANCE
 /Backend
