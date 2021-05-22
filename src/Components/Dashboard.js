@@ -36,7 +36,7 @@ import DownIcon from "@material-ui/icons/ExpandMore";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 // search bar
 import SearchBar from "material-ui-search-bar";
-import { FiberSmartRecordSharp } from '@material-ui/icons';
+import { FiberSmartRecordSharp, LocalConvenienceStoreOutlined } from '@material-ui/icons';
 
 import Login  from "./Login.js";
 require("firebase/firestore");
@@ -168,6 +168,29 @@ async function getMySpotifyPlaylists(access_token) {
       "Accept": "application/json"},
   })
   let data = await res.json();
+  if(data.items)
+    return data.items
+  return []
+}
+
+//Search for an artist using keyword q, and access token
+async function searchItem (access_token, search_key, search_type) {
+  let res = await fetch(`https://api.spotify.com/v1/search?q=${search_key}&type=${search_type}&limit=1`, {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      "Authorization": "Bearer "+access_token,
+      "Content-Type": "application/json",
+      "Accept": "application/json"},
+    param: {
+      "q": search_key, 
+      "type": search_type,
+      "limit": 1
+    }
+  })
+  console.log("printing res ");
+  let data = await res.json();
+  console.log("printing data val " + JSON.stringify(data));
   if(data.items)
     return data.items
   return []
@@ -347,7 +370,10 @@ export default function Dashboard() {
   }
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
-    let data = await getMySpotifyPlaylists(access_token);
+    //let data = await getMySpotifyPlaylists(access_token);
+
+    let data = await searchItem(access_token, "hello", "playlist");
+    //let data = await searchItem(access_token, "rick", "artist");
     console.log("got my spotify playlists " + data);
     setMyPlaylists(data);
     setSearchResults(["result1", "result2"]);
