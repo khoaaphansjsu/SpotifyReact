@@ -307,7 +307,7 @@ export default function Dashboard() {
     //window.localStorage.clear('refresh');
     window.localStorage.clear();
     //redirect to spotify here
-    window.location.replace("https://www.spotify.com/us/");
+    window.location.replace("http://localhost:3000/");
     //cannot go back one page
     window.history.forward(-1);
   }
