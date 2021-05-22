@@ -191,6 +191,8 @@ app.get('/getMyCollections', async (req, res) => {
   // res.json(data);
 })
 
+
+
 //add thing to collection
 app.get('/addCollection', (req, res) => {
   const userId = req.query.userId;
