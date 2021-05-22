@@ -191,17 +191,30 @@ app.get('/getMyCollections', async (req, res) => {
   // res.json(data);
 })
 
+//add thing to collection
 app.get('/addCollection', (req, res) => {
+  const userId = req.query.userId;
+  const collection  = req.query.collectionName;
+  const addTo = req.query.thingToAdd
+  db.collection('users').doc(email).collection('super').doc(collectionName).update(
+  {links:
+          firebase.firestore.FieldValue.arrayUnion(addTo)
+  })
   console.log("adding a collection", req)
 })
 
-function add(email, collectionName, thingToAdd) {
+//remove thing from collection
+app.get('/removeCollection', (req, res) => {
   const userId = req.query.userId;
+  const collection  = req.query.collectionName;
+  const addTo = req.query.thingToAdd
   db.collection('users').doc(email).collection('super').doc(collectionName).update(
-  {links:
-          firebase.firestore.FieldValue.arrayUnion(thingToAdd)
-  })
-}
+    {links:
+        firebase.firestore.FieldValue.arrayRemove(thingToRemove)
+    })
+})
+
+
 
 app.get("/getCollection", async (req, res) => {
   console.log("getting collection " + req.query.uuid)

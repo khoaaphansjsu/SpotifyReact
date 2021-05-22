@@ -182,8 +182,14 @@ async function getMyCollection(userId) {
 }
 
 async function addCollection(userId, collectionName, thingToadd) {
-  let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
+  let res = await fetch("https://localhost:8888/addCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
 }
+
+async function removeCollection(userId, collectionName, thingToRemove) {
+  let res = await fetch("https://localhost:8888/removeCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToRemove)
+}
+
+
 
 async function getCollection(uuid) {
   console.log("getting collection uuid ",  uuid)
@@ -295,6 +301,17 @@ export default function Dashboard() {
     setSearchResults(["result1", "result2"]);
   }, [])
 
+  async function logOut(){
+    //delete auth tokens here
+    //window.localStorage.clear('access');
+    //window.localStorage.clear('refresh');
+    window.localStorage.clear();
+    //redirect to spotify here
+    window.location.replace("https://www.spotify.com/us/");
+    //cannot go back one page
+    window.history.forward(-1);
+  }
+
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
@@ -350,8 +367,8 @@ export default function Dashboard() {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Dashboard
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
+            <IconButton color="inherit" onClick={() => logOut()}>
+              <Badge badgeContent={"log out"} color="secondary">
               </Badge>
             </IconButton>
           </Toolbar>
