@@ -189,6 +189,38 @@ async function removeCollection(userId, collectionName, thingToRemove) {
   let res = await fetch("https://localhost:8888/removeCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToRemove)
 }
 
+// async function exportPlaylist(access_token) {
+//   let res = await fetch("https://api.spotify.com/v1/users/"+ user + "/playlists" , {
+//     method: 'POST',
+//     credentials: 'same-origin',
+//     headers: {
+//       "Authorization": "Bearer "+access_token,
+//       "Content-Type": "application/json",
+//       "Accept": "application/json"},
+//     data: {
+//       "name" : "Spotify react",
+//       "public" : false}
+//     })
+//   let data = await res.json();
+//   if(data.items)
+//     return data.items
+//   return []
+// }
+
+// async function getMySpotifyPlaylists(access_token) {
+//   let res = await fetch("https://api.spotify.com/v1/me/playlists", {
+//     method: 'GET',
+//     credentials: 'same-origin',
+//     headers: {
+//       "Authorization": "Bearer "+access_token,
+//       "Content-Type": "application/json",
+//       "Accept": "application/json"},
+//   })
+//   let data = await res.json();
+//   if(data.items)
+//     return data.items
+//   return []
+// }
 
 
 async function getCollection(uuid) {
@@ -253,7 +285,7 @@ export default function Dashboard() {
   while (!result.done) {
     result = it.next();
   }
-
+  const [user, setUser] = React.useState(null)
   const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
   function getCurrentUser(token) {
     return fetch("https://api.spotify.com/v1/me", {
@@ -268,9 +300,29 @@ export default function Dashboard() {
           let res = await getMyCollection(data.email);
           console.log("a result", res)
           setCollections(res)
+          setUser(data.id)
+          console.log(data)
           return data
         })
       })
+  }
+
+  async function exportPlaylist(access_token) {
+    let res = await fetch("https://api.spotify.com/v1/users/"+ user + "/playlists" , {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        "Authorization": "Bearer "+access_token,
+        "Content-Type": "application/json",
+        "Accept": "application/json"},
+      data: {
+        "name" : "Spotify react",
+        "public" : false}
+      })
+    let data = await res.json();
+    if(data.items)
+      return data.items
+    return []
   }
 
   const [ collections, setCollections] =              React.useState([]);        //look at discord
@@ -399,7 +451,7 @@ export default function Dashboard() {
                     {""+current_collection.name}
                   </Typography>
                   {current_collection.items.map(p=>{return collectionCard(p)})}
-                  <Button>Export</Button>
+                  <Button onClick={() => exportPlaylist(access_token)}> Export</Button>
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6} lg={6}>
