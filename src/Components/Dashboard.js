@@ -36,6 +36,10 @@ import DownIcon from "@material-ui/icons/ExpandMore";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 // search bar
 import SearchBar from "material-ui-search-bar";
+// drop down menu (for mode)
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+
 import { FiberSmartRecordSharp, LocalConvenienceStoreOutlined } from '@material-ui/icons';
 
 import Login  from "./Login.js";
@@ -138,7 +142,7 @@ async function getMySpotifyPlaylists(access_token) {
   return []
 }
 
-//Search for an artist using keyword q, and access token
+//Search for artists, playlists, songs using keyword q, and access token
 async function searchItem (access_token, search_key, search_type) {
   let res = await fetch(`https://api.spotify.com/v1/search?q=${search_key}&type=${search_type}&limit=1`, {
     method: 'GET',
@@ -181,9 +185,9 @@ async function getCollection(uuid) {
   return Object.entries(data);
 }
 
-async function searchSpotifyPlaylists(access_token, keyword) {
-  console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
-}
+// async function searchSpotifyPlaylists(access_token, keyword) {
+//   console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
+// }
 
 function collectionCard(musicItem) {
   let info = "";
@@ -261,7 +265,7 @@ export default function Dashboard() {
   const [ myPlaylists, setMyPlaylists] =      React.useState([]);
   const [ searchResults, setSearchResults ] = React.useState([]);
   const [ searchWord, setSearchWord ] =       React.useState("");
-  const [ mode, setMode ] =                   React.useState("My Spotify");
+  const [ mode, setMode ] =                   React.useState("My Playlists");
 
   async function selectCollection(c) {
     // let res = await getCollection(c[1]);
@@ -281,8 +285,7 @@ export default function Dashboard() {
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
     let data = await getMySpotifyPlaylists(access_token);
-
-    // let data = await searchItem(access_token, "hello", "playlist");
+    //let data = await searchItem(access_token, "hello", "playlist");
     //let data = await searchItem(access_token, "rick", "artist");
     console.log("got my spotify playlists " + data);
     setMyPlaylists(data);
@@ -316,16 +319,25 @@ export default function Dashboard() {
   const fixedHeightPaper = clsx(classes.paper);
 
   function updateSearch() {
-    if(mode==="Public Spotify")
-      searchSpotifyPlaylists(access_token, searchWord)
+    //if (mode==="My Playlists") {}
+      
+    if(mode==="Public Playlists")
+      searchItem(access_token, searchWord, "album,playlist");
+    else if (mode==="Public Artists")
+      searchItem(access_token, searchWord, "artist");
+    else if (mode==="Public Songs") 
+      searchItem(access_token, searchWord, "track");
   }
   function getResults() {
-    if(mode==="Public Spotify") {
-      return searchResults
-    }
-    else if(mode==="My Spotify") {
+    if(mode==="My Playlists") {
       return myPlaylists.filter(p => {return p.name.includes(searchWord)})
     }
+    else if(mode==="Public Playlists") {
+      return null;
+    }
+    else if (mode==="Public Artists")
+      return searchItem(access_token, searchWord, "artist");
+    else if (mode==="Public Songs") {}
     return ["bad state"]
   }
 
@@ -387,10 +399,29 @@ export default function Dashboard() {
       </Card>
     );
   }
+  function modeButton() {
+    return (
+      <>
+      <Select 
+        style={{maxWidth: 345, display: 'flex', margin: "5px"}}
+        autoWidth={false}
+        value={"My Playlists"}
+        onChange={(newValue) => setMode(newValue)}
+        //onSubmit={() => updateSearch()}
+      >
+        <MenuItem value={"My Playlists"}>My Playlists</MenuItem>
+        <MenuItem value={"Public Playlists"}>Public Playlists</MenuItem>
+        <MenuItem value={"Public Artists"}>Public Artists</MenuItem>
+        <MenuItem value={"Public Songs"}>Public Songs</MenuItem>
+      </Select>
+      </>
+    )
+  }
 
   function SearchArea() {
     return (
       <>
+      {modeButton()}
       <SearchBar
         searchWord={searchWord}
         onChange={(newValue) => setSearchWord(newValue)}
