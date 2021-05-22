@@ -155,7 +155,7 @@ async function searchItem (access_token, search_key, search_type) {
   })
   console.log("printing res ");
   let data = await res.json();
-  console.log("printing data val " + JSON.stringify(data));
+  console.log("search data val " + JSON.stringify(data));
   if(data.items)
     return data.items
   return []
@@ -165,10 +165,11 @@ async function getMyCollections(userId) {
   console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
   const data = await res.json();
-  console.log(data);
-  return Object.entries(data);
-}
+  let decoded = await Object.entries(data)
+  console.log("my collections "+ Object.values(data));
 
+  return Object.values(data);
+}
 
 async function getCollection(uuid) {
   console.log("getting collection uuid ",  uuid)
@@ -244,7 +245,7 @@ export default function Dashboard() {
       }).then(res => {
         res.json().then(async data => {
           let res = await getMyCollections(data.email);
-          console.log("a result", res)
+          console.log("my collections ", res)
           setCollections(res)
           setEmail(data.id)
           console.log(data)
@@ -253,7 +254,7 @@ export default function Dashboard() {
       })
   }
   const [ collections, setCollections] =              React.useState([]);        //look at discord
-  const [ current_collection, setCurrentCollection] = React.useState({name: "test", items:{}});
+  const [ current_collection, setCurrentCollection] = React.useState({id: "test", items:{}});
   const [ access_token, setAccessToken] =             React.useState(qs.get("access_token"));
   const [ refresh_token, setRefreshToken] =           React.useState("");
   // search component
@@ -263,8 +264,19 @@ export default function Dashboard() {
   const [ mode, setMode ] =                   React.useState("My Spotify");
 
   async function selectCollection(c) {
-    let res = await getCollection(c[1]);
-    console.log("printing" + res)
+    // let res = await getCollection(c[1]);
+    console.log("selecting collection " + c )
+    let newCollection = c.items.map(playlist => {
+      let res = {}
+      if(playlist.length!=1) {
+        res = {tracks: {total:playlist.length, links:playlist}}
+      }
+      else {
+        res = {link: playlist[0]}
+      }
+      return res
+    })
+    setCurrentCollection(newCollection)
   }
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
@@ -276,9 +288,9 @@ export default function Dashboard() {
     setMyPlaylists(data);
     setSearchResults(["result1", "result2"]);
     let musicObjects = {}
-    musicObjects["test playlist"] = {tracks:{total:5}}
-    musicObjects["test artist"] =   {tracks:{total:10}, topSongsNumber: 10}
-    musicObjects["test song"] = {true:true}
+    musicObjects["test playlist"] = {tracks:{total:5,  links:["initialLink1","initialLink2"]}}
+    musicObjects["test artist"] =   {tracks:{total:10, links:["initialLink3","initialLink4"]}, topSongsNumber: 10}
+    musicObjects["test song"] =     {link:"initialSongLink"}
     setCurrentCollection({name:"new collection", items:musicObjects})
   }, [])
 
@@ -321,14 +333,14 @@ export default function Dashboard() {
     // only add to our view if it is not ther already
     let newCollectionItems = current_collection.items
     newCollectionItems.put(collectionName, thingToadd)
-    setCurrentCollection({name:current_collection.name, items:newCollectionItems})
+    setCurrentCollection({name:current_collection.id, items:newCollectionItems})
     let res = await fetch("https://localhost:8888/addCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
   }
   
   async function removeCollection(userId, collectionName, thingToRemove) {
     let newCollectionItems = current_collection.items
     newCollectionItems.remove(collectionName)
-    setCurrentCollection({name:current_collection.name, items:newCollectionItems})
+    setCurrentCollection({name:current_collection.id, items:newCollectionItems})
     let res = await fetch("https://localhost:8888/removeCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToRemove)
   }
 
@@ -351,7 +363,7 @@ export default function Dashboard() {
       return []
     }
 
-  function ImgMediaCard(musicObject) {
+  function SearchCard(musicObject) {
     let playliststuff = null
     if(musicObject.tracks) 
       playliststuff = (
@@ -368,7 +380,7 @@ export default function Dashboard() {
           {playliststuff}
         </CardContent>
         <CardActions disableSpacing style={{"margin-left": "auto"}}>
-          <IconButton aria-label="add to favorites" onclick={()=>addCollection(email, current_collection.name, musicObject.name)}>
+          <IconButton aria-label="add to favorites" onclick={()=>addCollection(email, current_collection.id, musicObject.name)}>
             <AddIcon />
           </IconButton>
         </CardActions>
@@ -384,7 +396,7 @@ export default function Dashboard() {
         onChange={(newValue) => setSearchWord(newValue)}
         onSubmit={() => updateSearch()}
       />
-      <Card>{getResults().map((pl) => {return ImgMediaCard(pl)})}</Card>
+      <Card>{getResults().map((pl) => {return SearchCard(pl)})}</Card>
       </>
     )
   }
@@ -426,7 +438,7 @@ export default function Dashboard() {
             </IconButton>
           </div>
           <Divider />
-          {collections.map(c => {return <Card onClick={() => {selectCollection(c)}}>{c[0]}</Card>})}
+          {collections.map(c => {return <Card onClick={() => {selectCollection(c)}}>{c.id}</Card>})}
           <IconButton>
               <AddIcon/>
             </IconButton>
@@ -439,7 +451,7 @@ export default function Dashboard() {
               <Grid item xs={12} md={6} lg={6}>
                 <Paper className={fixedHeightPaper}>
                   <Typography gutterBottom variant="h7" component="h5">
-                    {""+current_collection.name}
+                    {""+current_collection.id}
                   </Typography>
                   {Object.values(current_collection.items).map(p=>{return collectionCard(p)})}
                   <Button onClick={() => exportPlaylist()}> Export</Button>
