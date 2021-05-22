@@ -169,9 +169,7 @@ async function getMyCollections(userId) {
   console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
   const data = await res.json();
-  let decoded = await Object.entries(data)
   console.log("my collections "+ Object.values(data));
-
   return Object.values(data);
 }
 
@@ -189,9 +187,12 @@ async function getCollection(uuid) {
 //   console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
 // }
 
-function collectionCard(musicItem) {
+function collectionCard(keyValue) {
   let info = "";
   let artisStuff = "";
+  const id = keyValue[0]
+  const musicItem = keyValue[1]
+  console.log("collection card id "+ id + " value " + musicItem)
   if(musicItem.tracks) {
     let artistStuff = ""
     info = 
@@ -215,7 +216,7 @@ function collectionCard(musicItem) {
     <Card style={{display: 'flex', margin: "5px"}}>
       <CardContent>
         <Typography gutterBottom variant="h7" component="h5">
-          {""+musicItem.name}
+          {""+id}
         </Typography>
         {info}
       </CardContent>
@@ -269,18 +270,18 @@ export default function Dashboard() {
 
   async function selectCollection(c) {
     // let res = await getCollection(c[1]);
-    console.log("selecting collection " + c )
-    let newCollection = c.items.map(playlist => {
-      let res = {}
-      if(playlist.length!=1) {
-        res = {tracks: {total:playlist.length, links:playlist}}
-      }
-      else {
-        res = {link: playlist[0]}
-      }
-      return res
-    })
-    setCurrentCollection(newCollection)
+    console.log("selecting collection " + c.id + " with items " + c.items)
+    // let newCollection = Object.entries(c.items).map(playlist => {
+    //   let res = {}
+    //   if(playlist[1].length!=1) {
+    //     res = {id: playlist[0], tracks: {total:playlist.length, links:playlist}}
+    //   }
+    //   else {
+    //     res = {id: playlist[0], link: playlist[0]}
+    //   }
+    //   return res
+    // })
+    setCurrentCollection(c)
   }
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
@@ -294,7 +295,7 @@ export default function Dashboard() {
     musicObjects["test playlist"] = {tracks:{total:5,  links:["initialLink1","initialLink2"]}}
     musicObjects["test artist"] =   {tracks:{total:10, links:["initialLink3","initialLink4"]}, topSongsNumber: 10}
     musicObjects["test song"] =     {link:"initialSongLink"}
-    setCurrentCollection({name:"new collection", items:musicObjects})
+    setCurrentCollection({id:"new collection", items: musicObjects})
   }, [])
 
   async function logOut(){
@@ -357,6 +358,7 @@ export default function Dashboard() {
   }
 
     async function exportPlaylist(access_token) {
+      console.log("exporting collection " + current_collection + " to user " + email)
       let res = await fetch("https://api.spotify.com/v1/users/"+ email + "/playlists" , {
       method: 'POST',
       credentials: 'same-origin',
@@ -484,7 +486,7 @@ export default function Dashboard() {
                   <Typography gutterBottom variant="h7" component="h5">
                     {""+current_collection.id}
                   </Typography>
-                  {Object.values(current_collection.items).map(p=>{return collectionCard(p)})}
+                  {Object.entries(current_collection.items).map((p)=>{return collectionCard(p)})}
                   <Button onClick={() => exportPlaylist()}> Export</Button>
                 </Paper>
               </Grid>
