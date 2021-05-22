@@ -261,7 +261,6 @@ async function searchSpotifyPlaylists(access_token, keyword) {
 }
 
 function collectionCard(musicItem) {
-  console.log("music item " + musicItem.name)
   let info = "";
   let artisStuff = "";
   if(musicItem.tracks) {
@@ -370,9 +369,9 @@ export default function Dashboard() {
   }
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
-    //let data = await getMySpotifyPlaylists(access_token);
+    let data = await getMySpotifyPlaylists(access_token);
 
-    let data = await searchItem(access_token, "hello", "playlist");
+    // let data = await searchItem(access_token, "hello", "playlist");
     //let data = await searchItem(access_token, "rick", "artist");
     console.log("got my spotify playlists " + data);
     setMyPlaylists(data);
