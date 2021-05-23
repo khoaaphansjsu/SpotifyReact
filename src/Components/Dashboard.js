@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme) => ({
     height: 240,
   }
 }));
-
+//Get all spotify playlists on account via an access token
 async function getMySpotifyPlaylists(access_token) {
   let res = await fetch("https://api.spotify.com/v1/me/playlists", {
     method: 'GET',
@@ -166,6 +166,7 @@ async function searchItem (access_token, search_key, search_type) {
   return []
 }
 
+//Get all super collections associated with user's email 
 async function getMyCollections(userId) {
   console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
@@ -173,6 +174,7 @@ async function getMyCollections(userId) {
   return Object.values(data);
 }
 
+//Get collection via uuid which would be the email
 async function getCollection(uuid) {
   console.log("getting collection uuid ",  uuid)
   let uuid_segments = uuid._path.segments
@@ -183,10 +185,7 @@ async function getCollection(uuid) {
   return Object.entries(data);
 }
 
-// async function searchSpotifyPlaylists(access_token, keyword) {
-//   console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
-// }
-
+//Dashboard functions
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
   let it = qs.keys();
@@ -194,9 +193,13 @@ export default function Dashboard() {
   while (!result.done) {
     result = it.next();
   }
+
+  //Save commonly used variables
   const [id, setId] = React.useState(null)
   const [email, setEmail] = React.useState(null)
-  const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
+  const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null);
+  
+  //Get user that logged in with spotify
   function getCurrentUser(token) {
     return fetch("https://api.spotify.com/v1/me", {
         method: 'GET',
@@ -227,6 +230,7 @@ export default function Dashboard() {
   const [ searchWord, setSearchWord ] =       React.useState("");
   const [ mode, setMode ] =                   React.useState("My Playlists");
 
+  //Select collection from left side
   async function selectCollection(c) {
     console.log("selecting collection " + c.id + " with items " + c.items)
     setCurrentCollection(c)
@@ -246,6 +250,7 @@ export default function Dashboard() {
     setCurrentCollection({id:"loading", items: musicObjects})
   }, [])
 
+  //logout of supafy
   async function logOut(){
     //delete auth tokens here
     //window.localStorage.clear('access');
@@ -257,6 +262,7 @@ export default function Dashboard() {
     window.history.forward(-1);
   }
 
+  //Delete current collection from firestore database
   async function deleteFromDataBase() {
     let current = current_collection.id
     let res = await fetch("https://localhost:8888/deleteFromDataBase?current="+ current + "&email=" + email)
@@ -264,6 +270,7 @@ export default function Dashboard() {
     setCollections(result)
   }
 
+  //Create an empty collection in firestore database
   async function createEmpty() {
     const userEmail = email
     console.log("bouta start creating")
@@ -285,6 +292,7 @@ export default function Dashboard() {
   };
   const fixedHeightPaper = clsx(classes.paper);
 
+  //Search bar code
   function updateSearch() {
     //if (mode==="My Playlists") {}
       
@@ -295,6 +303,8 @@ export default function Dashboard() {
     else if (mode==="Public Songs") 
       searchItem(access_token, searchWord, "track");
   }
+
+  //Get search results
   function getResults() {
     if(mode==="My Playlists") {
       return myPlaylists.filter(p => {return p.name.includes(searchWord)})
@@ -308,6 +318,7 @@ export default function Dashboard() {
     return ["bad state"]
   }
 
+  //Access spotify api to get playlists
   async function getAllTracksFromId(musicObj) {
     let ids = []
     let res = null;
@@ -317,6 +328,7 @@ export default function Dashboard() {
     }
   }
 
+  //add song/playlist/etc. to collection in database
   async function addToCollection(thingToadd) {
     // only add to our view if it is not ther already
     console.log("adding element " + thingToadd + " to current collection " + current_collection.id)
@@ -326,6 +338,7 @@ export default function Dashboard() {
     let res = await fetch("https://localhost:8888/addCollections?userId="+email + "&arg2=" + current_collection.id + "&arg=" + thingToadd.name)
   }
   
+  //remove song/playlist/etc. from collection in database
   async function removeFromCollection(idToRemove) {
     console.log("removing " + idToRemove)
     let newCollectionItems = current_collection.items   //.filter(x=>{return x.id==thingToRemove.name})
@@ -334,8 +347,7 @@ export default function Dashboard() {
     let res = await fetch("https://localhost:8888/removeCollections?userId="+email + "&arg2=" + current_collection.id + "&arg=" + idToRemove)
   }
 
-
-
+  //Export playlist to spotify
   async function exportPlaylist(access_token) {
     console.log("exporting collection " + current_collection + " to user " + email)
     let res = await fetch("https://api.spotify.com/v1/users/"+ email + "/playlists" , {
@@ -355,6 +367,8 @@ export default function Dashboard() {
       return data.items
     return []
   }
+
+  //Show collection
   function collectionCard(keyValue) {
     let info = "";
     let artisStuff = "";
@@ -397,7 +411,9 @@ export default function Dashboard() {
       </Card>
     );
   }
-  
+
+
+  //Display search results and search bar
   function SearchCard(musicObject) {
     let playliststuff = null
     let links = []
@@ -426,6 +442,8 @@ export default function Dashboard() {
       </Card>
     );
   }
+
+  //Select what topic to search in
   function modeButton() {
     return (
       <>
@@ -445,6 +463,7 @@ export default function Dashboard() {
     )
   }
 
+  //Search bar
   function SearchArea() {
     return (
       <>
@@ -459,6 +478,7 @@ export default function Dashboard() {
     )
   }
 
+  //construct log out,create empty collection, and deletefromDataBase button
   if(loggedin)
     return (
       <div className={classes.root}>
