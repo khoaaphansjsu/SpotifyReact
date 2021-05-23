@@ -170,18 +170,8 @@ async function getMyCollections(userId) {
   console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
   const data = await res.json();
-<<<<<<< HEAD
-  console.log(data);
-  return Object.entries(data);
-}
-
-async function addCollection(userId, collectionName, thingToadd) {
-
-  let res = await fetch("https://localhost:8888/addCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
-=======
   console.log("my collections "+ Object.values(data));
   return Object.values(data);
->>>>>>> 965c3a3039f48447c81752a798db340b58000287
 }
 
 async function getCollection(uuid) {
@@ -248,10 +238,7 @@ export default function Dashboard() {
   while (!result.done) {
     result = it.next();
   }
-<<<<<<< HEAD
-  const [user, EUser] = React.useState(null)
-=======
->>>>>>> 965c3a3039f48447c81752a798db340b58000287
+  const [id, setId] = React.useState(null)
   const [email, setEmail] = React.useState(null)
   const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
   function getCurrentUser(token) {
@@ -267,12 +254,8 @@ export default function Dashboard() {
           let res = await getMyCollections(data.email);
           console.log("my collections ", res)
           setCollections(res)
-<<<<<<< HEAD
-          setUser(data.id)
           setEmail(data.email)
-=======
-          setEmail(data.id)
->>>>>>> 965c3a3039f48447c81752a798db340b58000287
+          setId(data.id)
           console.log(data)
           return data
         })
@@ -332,6 +315,8 @@ export default function Dashboard() {
   async function createEmpty() {
     const userEmail = email
     let res = await fetch("https://localhost:8888/createEmpty?userEmail="+ userEmail)
+    let result = await getMyCollections(email);
+    setCollections(result)
   }
 
   const classes = useStyles();
@@ -477,7 +462,7 @@ export default function Dashboard() {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Dashboard
             </Typography>
-            <IconButton color="inherit" onClick={() => createEmpty()}>
+            <IconButton color="inherit" onClick={() => logOut()}>
               <Badge badgeContent={"log out"} color="secondary">
               </Badge>
             </IconButton>
@@ -501,7 +486,7 @@ export default function Dashboard() {
           </div>
           <Divider />
           {collections.map(c => {return <Card onClick={() => {selectCollection(c)}}>{c.id}</Card>})}
-          <IconButton>
+          <IconButton onClick={() => createEmpty()}>
               <AddIcon/>
             </IconButton>
           <Divider />
