@@ -183,40 +183,32 @@ app.get('/getMyCollections', async (req, res) => {
   result = await Promise.all(superplaylists)
   console.log("promises" + result);
   res.send(result);
-
-  // const doc = await db.collection('users').doc('ularavind@hotmail.com').get()
-  // console.log(doc.id, '=>', doc);
-  // let data = doc.data();
-  // console.log(doc.id, '=>', data);
-  // res.json(data);
 })
 
 
 
-//add thing to collection
-app.get('/addCollection', (req, res) => {
+//add a thing to collection
+app.get('/addToCollection', (req, res) => {
   const userId = req.query.userId;
-  const collection  = req.query.collectionName;
-  const addTo = req.query.thingToAdd
-  db.collection('users').doc(email).collection('super').doc(collectionName).update(
-  {links:
-          firebase.firestore.FieldValue.arrayUnion(addTo)
-  })
+  const collectionName  = req.query.collectionName;
+  const thingToAdd = req.query.thingToAdd
+  const uris = req.query.uris
+  console.log("adding to collection " + collectionName + " a new thing " + thingToAdd)
+  let newVal = {}
+  newVal[thingToAdd] = firebase.firestore.FieldValue.arrayUnion(uris)
+  db.collection('users').doc(userId).collection('super').doc(collectionName).update(newVal)
   console.log("adding a collection", req)
 })
 
-//remove thing from collection
-app.get('/removeCollection', (req, res) => {
+//remove a thing from collection
+app.get('/removeFromCollection', (req, res) => {
   const userId = req.query.userId;
-  const collection  = req.query.collectionName;
-  const addTo = req.query.thingToAdd
-  db.collection('users').doc(email).collection('super').doc(collectionName).update(
-    {links:
-        firebase.firestore.FieldValue.arrayRemove(thingToRemove)
-    })
+  const collectionName  = req.query.collectionName;
+  const idToRemove = req.query.idToRemove
+  let newVal = {}
+  newVal[idToRemove] = firebase.firestore.FieldValue.delete()
+  db.collection('users').doc(userId).collection('super').doc(collectionName).update(newVal)
 })
-
-
 
 app.get("/getCollection", async (req, res) => {
   console.log("getting collection " + req.query.uuid)

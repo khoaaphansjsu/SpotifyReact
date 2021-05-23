@@ -288,12 +288,26 @@ export default function Dashboard() {
     return ["bad state"]
   }
 
+  // get all track ids from 
   async function getAllTracksFromId(musicObj) {
     let ids = []
     let res = null;
     if(musicObj.type==="playlist") {
-      // res = await fetch("https://api.spotify.com/v1/playlists/"+musicObj.id)
-      ids = res
+      res = await fetch("https://api.spotify.com/v1/playlists/"+musicObj.id, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+          "Authorization": "Bearer "+access_token,
+          "Content-Type": "application/json",
+          "Accept": "application/json"},
+      })
+      let data = await res.json();
+      console.log("get id list " +  Object.values(data.tracks));
+      ids = Object.values(data.tracks.items).map(x => {
+        console.log("x " + JSON.stringify(x))
+        return x.track.uri
+      })
+      return ids
     }
   }
 
@@ -301,9 +315,13 @@ export default function Dashboard() {
     // only add to our view if it is not ther already
     console.log("adding element " + thingToadd + " to current collection " + current_collection.id)
     let newCollectionItems = current_collection.items
+    let uris = await getAllTracksFromId(thingToadd)
     newCollectionItems[thingToadd.name] = thingToadd
     setCurrentCollection({id:current_collection.id, items:newCollectionItems})
-    let res = await fetch("https://localhost:8888/addCollections?userId="+email + "&arg2=" + current_collection.id + "&arg=" + thingToadd.name)
+    let res = await fetch("https://localhost:8888/addToCollection?userId="+email + 
+        "&collectionName=" + current_collection.id + 
+        "&thingToAdd=" + thingToadd.name +
+        "&uris=" + uris)
   }
   
   async function removeFromCollection(idToRemove) {
@@ -311,11 +329,13 @@ export default function Dashboard() {
     let newCollectionItems = current_collection.items   //.filter(x=>{return x.id==thingToRemove.name})
     delete newCollectionItems[idToRemove]
     setCurrentCollection({id:current_collection.id, items:newCollectionItems})
-    let res = await fetch("https://localhost:8888/removeCollections?userId="+email + "&arg2=" + current_collection.id + "&arg=" + idToRemove)
+    let res = await fetch("https://localhost:8888/removeFromCollection?userId="+email + 
+      "&collectionName=" + current_collection.id + 
+      "&idToRemove=" + idToRemove)
   }
 
   async function exportPlaylist(access_token) {
-    console.log("exporting collection " + current_collection + " to user " + email)
+    // console.log("exporting collection " + current_collection + " to user " + email)
     let res = await fetch("https://api.spotify.com/v1/users/"+ email + "/playlists" , {
     method: 'POST',
     credentials: 'same-origin',
@@ -328,7 +348,7 @@ export default function Dashboard() {
       "public" : false}
     })
     let data = await res.json();
-    console.log("exported result " + data)
+    // console.log("exported result " + data)
     if(data.items)
       return data.items
     return []
@@ -338,7 +358,7 @@ export default function Dashboard() {
     let artisStuff = "";
     const id = keyValue[0]
     const musicItem = keyValue[1]
-    console.log("collection card id "+ id + " value " + musicItem)
+    // console.log("collection card id "+ id + " value " + musicItem)
     if(musicItem.length>1) {
       let artistStuff = ""
       info = 
@@ -385,7 +405,7 @@ export default function Dashboard() {
             Tracks Total: {musicObject.tracks.total}
           </Typography>
       )
-      console.log("musicObject.tracks " + musicObject)
+      // console.log("musicObject.tracks " + musicObject)
       // links = Object.musicObject.tracks.map(t=>{return t.id})
     }
     return (
