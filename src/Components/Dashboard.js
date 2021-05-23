@@ -144,6 +144,8 @@ async function getMySpotifyPlaylists(access_token) {
 
 //Search for artists, playlists, songs using keyword q, and access token
 async function searchItem (access_token, search_key, search_type) {
+  console.log("search_key  " + search_key); 
+  console.log("search_type  " + search_type);
   let res = await fetch(`https://api.spotify.com/v1/search?q=${search_key}&type=${search_type}&limit=1`, {
     method: 'GET',
     credentials: 'same-origin',
@@ -263,6 +265,9 @@ export default function Dashboard() {
   const [ refresh_token, setRefreshToken] =           React.useState("");
   // search component
   const [ myPlaylists, setMyPlaylists] =      React.useState([]);
+  const [ publicPlaylists, setPublicPlaylists] =      React.useState([]);
+  const [ publicArtists, setPublicArtists] =      React.useState([]);
+  const [ publicSongs, setPublicSongs] =      React.useState([]);
   const [ searchResults, setSearchResults ] = React.useState([]);
   const [ searchWord, setSearchWord ] =       React.useState("");
   const [ mode, setMode ] =                   React.useState("My Playlists");
@@ -318,27 +323,32 @@ export default function Dashboard() {
   };
   const fixedHeightPaper = clsx(classes.paper);
 
-  function updateSearch() {
-    //if (mode==="My Playlists") {}
-      
-    if(mode==="Public Playlists")
-      searchItem(access_token, searchWord, "album,playlist");
-    else if (mode==="Public Artists")
-      searchItem(access_token, searchWord, "artist");
-    else if (mode==="Public Songs") 
-      searchItem(access_token, searchWord, "track");
+  async function updateSearch() {  
+    console.log("searchWord !!!! " + searchWord);
+    if(mode==="Public Playlists") {
+      setPublicPlaylists(searchItem(access_token, searchWord, "album,playlist"));
+    }
+    else if (mode==="Public Artists") {
+      setPublicArtists(searchItem(access_token, searchWord, "artist"));
+    }
+    else if (mode==="Public Songs") {
+      setPublicSongs(searchItem(access_token, searchWord, "track"));
+    }  
   }
   function getResults() {
     if(mode==="My Playlists") {
       return myPlaylists.filter(p => {return p.name.includes(searchWord)})
-    }
+    }  
     else if(mode==="Public Playlists") {
-      return null;
-    }
-    else if (mode==="Public Artists")
-      return searchItem(access_token, searchWord, "artist");
-    else if (mode==="Public Songs") {}
-    return ["bad state"]
+      return publicPlaylists;
+    }     
+    else if (mode==="Public Artists") {
+      return publicArtists;
+    }  
+    else if (mode==="Public Songs") {
+      return publicSongs; 
+    } 
+    return ["bad state"];
   }
 
   async function addCollection(userId, collectionName, thingToadd) {
@@ -400,14 +410,18 @@ export default function Dashboard() {
     );
   }
   function modeButton() {
+    const handleChange = (event) => {
+      setMode(event.target.value);
+      console.log("Current mode " + mode);
+    };
+    
     return (
       <>
       <Select 
         style={{maxWidth: 345, display: 'flex', margin: "5px"}}
         autoWidth={false}
-        value={"My Playlists"}
-        onChange={(newValue) => setMode(newValue)}
-        //onSubmit={() => updateSearch()}
+        value={mode}
+        onChange={handleChange}
       >
         <MenuItem value={"My Playlists"}>My Playlists</MenuItem>
         <MenuItem value={"Public Playlists"}>Public Playlists</MenuItem>
@@ -416,18 +430,30 @@ export default function Dashboard() {
       </Select>
       </>
     )
+    
   }
 
   function SearchArea() {
+    const getResultsForMyPlaylists = () => {<Card>{getResults().map((pl) => {    
+        return SearchCard(pl)
+      })}</Card>
+    }
+    if (mode==="My Playlists") {
+      getResultsForMyPlaylists();
+    }
     return (
       <>
       {modeButton()}
       <SearchBar
         searchWord={searchWord}
-        onChange={(newValue) => setSearchWord(newValue)}
-        onSubmit={() => updateSearch()}
+        onChange= {
+          async (newValue) => {
+            await setSearchWord(newValue)
+            await updateSearch()
+          } 
+        }
+        //onSubmit={() => updateSearch()}
       />
-      <Card>{getResults().map((pl) => {return SearchCard(pl)})}</Card>
       </>
     )
   }
