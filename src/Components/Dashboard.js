@@ -314,9 +314,13 @@ export default function Dashboard() {
 
   async function createEmpty() {
     const userEmail = email
+    console.log("bouta start creating")
     let res = await fetch("https://localhost:8888/createEmpty?userEmail="+ userEmail)
+    console.log("this is the result of createEmpty " + res)
+    console.log("get here LOOOOOOOOOOOOOOOOOOOOOOOOOOOOL")
     let result = await getMyCollections(email);
     setCollections(result)
+    console.log("NEWCollection" + collections)
   }
 
   const classes = useStyles();

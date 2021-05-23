@@ -220,7 +220,9 @@ app.get('/createEmpty', async (req, res) => {
     link: []
   }
   console.log("Create empty collection in " + userId)
-  db.collection('users').doc(userId).collection('super').doc("somedefaultname").set(links)
+  let data = await db.collection('users').doc(userId).collection('super').doc("somedefaultname").set(links)
+  console.log("finished making an empty one boi")
+  res.json(data)
 })
 
 app.get("/getCollection", async (req, res) => {
