@@ -287,7 +287,7 @@ export default function Dashboard() {
   while (!result.done) {
     result = it.next();
   }
-  const [user, setUser] = React.useState(null)
+  const [user, EUser] = React.useState(null)
   const [email, setEmail] = React.useState(null)
   const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
   function getCurrentUser(token) {
