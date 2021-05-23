@@ -172,23 +172,17 @@ app.get('/getMyCollections', async (req, res) => {
   const userId = req.query.userId;
   console.log("getMyCollections " + userId)
   var result
-  const exercisesRef = await db.collection("users").doc(userId).collection('super').get();
-  let exercises = await exercisesRef.docs.map( async (doc) => {
-    let res = await doc.data()
+  const superplaylistsRef = await db.collection("users").doc(userId).collection('super').get();
+  let superplaylists = await superplaylistsRef.docs.map( async (doc) => {
+    let res = {};
     res.id = doc.id;
+    res.items = await doc.data();
     console.log(res);
     return res;
   } )
-  result = await Promise.all(exercises)
+  result = await Promise.all(superplaylists)
   console.log("promises" + result);
-  res.json(result);
-  console.log("promises" + Promise.all(exercises));
-
-  // const doc = await db.collection('users').doc('ularavind@hotmail.com').get()
-  // console.log(doc.id, '=>', doc);
-  // let data = doc.data();
-  // console.log(doc.id, '=>', data);
-  // res.json(data);
+  res.send(result);
 })
 
 //add thing to collection
@@ -230,6 +224,13 @@ app.get("/getCollection", async (req, res) => {
   const doc = await db.collection(req.query.uuid[0]).doc(req.query.uuid[1]).get();
   console.log("getting collection " + doc.data())
   res.json(doc.data());
+})
+
+app.get("/deleteFromDataBase", async (req, res) => {
+  const currentCollection = req.query.current
+  const email = req.query.email
+  const data = await db.collection('users').doc(email).collection('super').doc(currentCollection).delete()
+  res.json(data)
 })
 
 console.log('Listening on 8888');

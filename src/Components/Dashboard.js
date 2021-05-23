@@ -210,13 +210,8 @@ export default function Dashboard() {
           let res = await getMyCollections(data.email);
           console.log("my collections ", res)
           setCollections(res)
-<<<<<<< HEAD
-          setEmail(data.email)
-          setId(data.id)
-=======
           setCurrentCollection(res[0])
           setEmail(data.email)
->>>>>>> e6d44d7b2518b5987df89dc77ca50534797e35c5
           console.log(data)
           return data
         })
@@ -260,6 +255,13 @@ export default function Dashboard() {
     window.location.replace("http://localhost:3000/");
     //cannot go back one page
     window.history.forward(-1);
+  }
+
+  async function deleteFromDataBase() {
+    let current = current_collection.id
+    let res = await fetch("https://localhost:8888/deleteFromDataBase?current="+ current + "&email=" + email)
+    let result = await getMyCollections(email);
+    setCollections(result)
   }
 
   async function createEmpty() {
@@ -331,6 +333,8 @@ export default function Dashboard() {
     setCurrentCollection({id:current_collection.id, items:newCollectionItems})
     let res = await fetch("https://localhost:8888/removeCollections?userId="+email + "&arg2=" + current_collection.id + "&arg=" + idToRemove)
   }
+
+
 
   async function exportPlaylist(access_token) {
     console.log("exporting collection " + current_collection + " to user " + email)
@@ -490,10 +494,6 @@ export default function Dashboard() {
             <IconButton onClick={handleDrawerClose}>
               <ArrowBackIosIcon/>
             </IconButton>
-            <IconButton color="inherit" onClick={() => createEmpty()}>
-              <Badge badgeContent={"Add new empty collection"} color="secondary">
-              </Badge>
-            </IconButton>
           </div>
           <Divider />
           {collections.map(c => {return <Card onClick={() => {selectCollection(c)}}>{c.id}</Card>})}
@@ -513,6 +513,7 @@ export default function Dashboard() {
                   </Typography>
                   {Object.entries(current_collection.items).map((p)=>{return collectionCard(p)})}
                   <Button onClick={() => exportPlaylist()}> Export</Button>
+                  <Button onClick={() => deleteFromDataBase()}>LOL</Button>
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6} lg={6}>
