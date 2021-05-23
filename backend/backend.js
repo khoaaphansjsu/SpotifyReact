@@ -192,11 +192,11 @@ app.get('/getMyCollections', async (req, res) => {
 })
 
 //add thing to collection
-app.get('/addCollection', (req, res) => {
+app.get('/addCollection', async (req, res) => {
   const userId = req.query.userId;
   const collection  = req.query.collectionName;
   const addTo = req.query.thingToAdd
-  db.collection('users').doc(email).collection('super').doc(collectionName).update(
+  db.collection('users').doc(userId).collection('super').doc(collection).update(
   {links:
           firebase.firestore.FieldValue.arrayUnion(addTo)
   })
@@ -204,17 +204,24 @@ app.get('/addCollection', (req, res) => {
 })
 
 //remove thing from collection
-app.get('/removeCollection', (req, res) => {
+app.get('/removeCollection', async (req, res) => {
   const userId = req.query.userId;
   const collection  = req.query.collectionName;
   const addTo = req.query.thingToAdd
-  db.collection('users').doc(email).collection('super').doc(collectionName).update(
+  db.collection('users').doc(userId).collection('super').doc(collection).update(
     {links:
         firebase.firestore.FieldValue.arrayRemove(thingToRemove)
     })
 })
 
-
+app.get('/createEmpty', async (req, res) => {
+  const userId = req.query.userEmail;
+  const links = {
+    link: []
+  }
+  console.log("Create empty collection in " + userId)
+  db.collection('users').doc(userId).collection('super').doc("somedefaultname").set(links)
+})
 
 app.get("/getCollection", async (req, res) => {
   console.log("getting collection " + req.query.uuid)

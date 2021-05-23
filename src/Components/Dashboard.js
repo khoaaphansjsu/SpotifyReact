@@ -39,6 +39,7 @@ import SearchBar from "material-ui-search-bar";
 import { FiberSmartRecordSharp } from '@material-ui/icons';
 
 import Login  from "./Login.js";
+import userEvent from '@testing-library/user-event';
 require("firebase/firestore");
 const firebase = require('firebase-admin');
 
@@ -182,6 +183,7 @@ async function getMyCollection(userId) {
 }
 
 async function addCollection(userId, collectionName, thingToadd) {
+
   let res = await fetch("https://localhost:8888/addCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
 }
 
@@ -286,6 +288,7 @@ export default function Dashboard() {
     result = it.next();
   }
   const [user, setUser] = React.useState(null)
+  const [email, setEmail] = React.useState(null)
   const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
   function getCurrentUser(token) {
     return fetch("https://api.spotify.com/v1/me", {
@@ -301,6 +304,7 @@ export default function Dashboard() {
           console.log("a result", res)
           setCollections(res)
           setUser(data.id)
+          setEmail(data.email)
           console.log(data)
           return data
         })
@@ -364,6 +368,11 @@ export default function Dashboard() {
     window.history.forward(-1);
   }
 
+  async function createEmpty() {
+    const userEmail = email
+    let res = await fetch("https://localhost:8888/createEmpty?userEmail="+ userEmail)
+  }
+
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
@@ -419,7 +428,7 @@ export default function Dashboard() {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Dashboard
             </Typography>
-            <IconButton color="inherit" onClick={() => logOut()}>
+            <IconButton color="inherit" onClick={() => createEmpty()}>
               <Badge badgeContent={"log out"} color="secondary">
               </Badge>
             </IconButton>
@@ -435,6 +444,10 @@ export default function Dashboard() {
           <div className={classes.toolbarIcon}>
             <IconButton onClick={handleDrawerClose}>
               <ArrowBackIosIcon/>
+            </IconButton>
+            <IconButton color="inherit" onClick={() => createEmpty()}>
+              <Badge badgeContent={"Add new empty collection"} color="secondary">
+              </Badge>
             </IconButton>
           </div>
           <Divider />
