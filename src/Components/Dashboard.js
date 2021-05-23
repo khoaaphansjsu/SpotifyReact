@@ -513,7 +513,7 @@ export default function Dashboard() {
                   </Typography>
                   {Object.entries(current_collection.items).map((p)=>{return collectionCard(p)})}
                   <Button onClick={() => exportPlaylist()}> Export</Button>
-                  <Button onClick={() => deleteFromDataBase()}>LOL</Button>
+                  <Button onClick={() => deleteFromDataBase()}>Delete collection</Button>
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6} lg={6}>
