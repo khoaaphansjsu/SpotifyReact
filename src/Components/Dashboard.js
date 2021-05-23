@@ -43,6 +43,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { FiberSmartRecordSharp, LocalConvenienceStoreOutlined } from '@material-ui/icons';
 
 import Login  from "./Login.js";
+import userEvent from '@testing-library/user-event';
 require("firebase/firestore");
 const firebase = require('firebase-admin');
 
@@ -193,6 +194,7 @@ export default function Dashboard() {
   while (!result.done) {
     result = it.next();
   }
+  const [id, setId] = React.useState(null)
   const [email, setEmail] = React.useState(null)
   const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
   function getCurrentUser(token) {
@@ -253,6 +255,24 @@ export default function Dashboard() {
     window.location.replace("http://localhost:3000/");
     //cannot go back one page
     window.history.forward(-1);
+  }
+
+  async function deleteFromDataBase() {
+    let current = current_collection.id
+    let res = await fetch("https://localhost:8888/deleteFromDataBase?current="+ current + "&email=" + email)
+    let result = await getMyCollections(email);
+    setCollections(result)
+  }
+
+  async function createEmpty() {
+    const userEmail = email
+    console.log("bouta start creating")
+    let res = await fetch("https://localhost:8888/createEmpty?userEmail="+ userEmail)
+    console.log("this is the result of createEmpty " + res)
+    console.log("get here LOOOOOOOOOOOOOOOOOOOOOOOOOOOOL")
+    let result = await getMyCollections(email);
+    setCollections(result)
+    console.log("NEWCollection" + collections)
   }
 
   const classes = useStyles();
@@ -333,6 +353,8 @@ export default function Dashboard() {
       "&collectionName=" + current_collection.id + 
       "&idToRemove=" + idToRemove)
   }
+
+
 
   async function exportPlaylist(access_token) {
     // console.log("exporting collection " + current_collection + " to user " + email)
@@ -495,7 +517,7 @@ export default function Dashboard() {
           </div>
           <Divider />
           {collections.map(c => {return <Card onClick={() => {selectCollection(c)}}>{c.id}</Card>})}
-          <IconButton>
+          <IconButton onClick={() => createEmpty()}>
               <AddIcon/>
             </IconButton>
           <Divider />
@@ -511,6 +533,7 @@ export default function Dashboard() {
                   </Typography>
                   {Object.entries(current_collection.items).map((p)=>{return collectionCard(p)})}
                   <Button onClick={() => exportPlaylist()}> Export</Button>
+                  <Button onClick={() => deleteFromDataBase()}>Delete collection</Button>
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6} lg={6}>

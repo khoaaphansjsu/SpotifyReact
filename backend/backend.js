@@ -210,11 +210,29 @@ app.get('/removeFromCollection', (req, res) => {
   db.collection('users').doc(userId).collection('super').doc(collectionName).update(newVal)
 })
 
+app.get('/createEmpty', async (req, res) => {
+  const userId = req.query.userEmail;
+  const links = {
+    link: []
+  }
+  console.log("Create empty collection in " + userId)
+  let data = await db.collection('users').doc(userId).collection('super').doc("somedefaultname").set(links)
+  console.log("finished making an empty one boi")
+  res.json(data)
+})
+
 app.get("/getCollection", async (req, res) => {
   console.log("getting collection " + req.query.uuid)
   const doc = await db.collection(req.query.uuid[0]).doc(req.query.uuid[1]).get();
   console.log("getting collection " + doc.data())
   res.json(doc.data());
+})
+
+app.get("/deleteFromDataBase", async (req, res) => {
+  const currentCollection = req.query.current
+  const email = req.query.email
+  const data = await db.collection('users').doc(email).collection('super').doc(currentCollection).delete()
+  res.json(data)
 })
 
 console.log('Listening on 8888');
