@@ -18,6 +18,8 @@ import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Link from '@material-ui/core/Link';
+import TextField from '@material-ui/core/TextField'
+import FormControl from '@material-ui/core/FormControl'
 // cards
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
@@ -210,9 +212,12 @@ export default function Dashboard() {
           let res = await getMyCollections(data.email);
           console.log("my collections ", res)
           setCollections(res)
-          setCurrentCollection(res[0])
-          setEmail(data.email)
-          console.log(data)
+          if(res[0]!=undefined) {
+            setCurrentCollection(res[0])
+            setCollectionName(res[0].id)
+            setEmail(data.email)
+            console.log(data)
+          }
           return data
         })
       })
@@ -226,6 +231,7 @@ export default function Dashboard() {
   const [ searchResults, setSearchResults ] = React.useState([]);
   const [ searchWord, setSearchWord ] =       React.useState("");
   const [ mode, setMode ] =                   React.useState("My Playlists");
+  const [ collection_name, setCollectionName ] =       React.useState("");
 
   async function selectCollection(c) {
     console.log("selecting collection " + c.id + " with items " + c.items)
@@ -264,10 +270,10 @@ export default function Dashboard() {
     setCollections(result)
   }
 
-  async function createEmpty() {
+  async function createEmpty(name) {
     const userEmail = email
     console.log("bouta start creating")
-    let res = await fetch("https://localhost:8888/createEmpty?userEmail="+ userEmail)
+    let res = await fetch("https://localhost:8888/createEmpty?userEmail="+ userEmail + "&name=" + name)
     console.log("this is the result of createEmpty " + res)
     console.log("get here LOOOOOOOOOOOOOOOOOOOOOOOOOOOOL")
     let result = await getMyCollections(email);
@@ -354,7 +360,19 @@ export default function Dashboard() {
       "&idToRemove=" + idToRemove)
   }
 
-
+  async function renameCollection() {
+    console.log("renaming collection " + current_collection.id + " to " + collection_name)
+    setCurrentCollection({id:collection_name, items:current_collection.items})
+    var newShit = {}
+    // Object.entries(current_collection.items).forEach(x=>{
+    //   console.log(x)
+    //   newShit[x[0]] = x[1]
+    // })
+    let res = await fetch("https://localhost:8888/renameCollection?userId="+email + 
+      "&oldName=" + current_collection.id + 
+      "&oldItems=" + newShit + 
+      "&newName=" + collection_name)
+  }
 
   async function exportPlaylist(access_token) {
     // console.log("exporting collection " + current_collection + " to user " + email)
@@ -517,7 +535,7 @@ export default function Dashboard() {
           </div>
           <Divider />
           {collections.map(c => {return <Card onClick={() => {selectCollection(c)}}>{c.id}</Card>})}
-          <IconButton onClick={() => createEmpty()}>
+          <IconButton onClick={() => createEmpty("new")}>
               <AddIcon/>
             </IconButton>
           <Divider />
@@ -528,12 +546,24 @@ export default function Dashboard() {
             <Grid container spacing={3}>
               <Grid item xs={12} md={6} lg={6}>
                 <Paper className={fixedHeightPaper}>
-                  <Typography gutterBottom variant="h7" component="h5">
+                  {/* <Typography gutterBottom variant="h7" component="h5">
                     {""+current_collection.id}
-                  </Typography>
+                  </Typography> */}
+                  <TextField id="standard-basic" label="Name" value={collection_name} defaultValue = {current_collection}
+                    onChange={(e)=> {
+                      // let newCurrColl = current_collection
+                      // newCurrColl.id = e.target.value;
+                      // console.log("new target val " + e.target.value)
+                      // console.log("curr_collection_id " + current_collection.id)
+                      // setCurrentCollection(newCurrColl)
+                      setCollectionName(e.target.value)
+                    }}>
+                      <FormControl type="text" value={collection_name} defaultValue = {collection_name} />
+                    </TextField>
                   {Object.entries(current_collection.items).map((p)=>{return collectionCard(p)})}
                   <Button onClick={() => exportPlaylist()}> Export</Button>
                   <Button onClick={() => deleteFromDataBase()}>Delete collection</Button>
+                  <Button onClick={() => renameCollection()}>Rename</Button>
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6} lg={6}>

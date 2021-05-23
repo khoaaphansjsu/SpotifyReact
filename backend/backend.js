@@ -216,7 +216,7 @@ app.get('/createEmpty', async (req, res) => {
     link: []
   }
   console.log("Create empty collection in " + userId)
-  let data = await db.collection('users').doc(userId).collection('super').doc("somedefaultname").set(links)
+  let data = await db.collection('users').doc(userId).collection('super').doc("new collection").set(links)
   console.log("finished making an empty one boi")
   res.json(data)
 })
@@ -233,6 +233,22 @@ app.get("/deleteFromDataBase", async (req, res) => {
   const email = req.query.email
   const data = await db.collection('users').doc(email).collection('super').doc(currentCollection).delete()
   res.json(data)
+})
+
+app.get("/renameCollection", async (req, res) => {
+  const oldName = req.query.oldName
+  const oldItems = req.query.oldItems
+  const userId = req.query.userId
+  const newName = req.query.newName
+  console.log("changing collection name " + oldName + " to " + newName + " for user " + userId)
+  const rrr = db.collection('users').doc(userId).collection('super').doc(oldName).delete()
+  console.log("how it looked "+Object.values(oldItems) )
+  let elements = {}
+  // await Object.entries(oldItems).map()
+  console.log(oldItems)
+  
+  let data = db.collection('users').doc(userId).collection('super').doc(newName).set(oldItems)
+  res.json(true)
 })
 
 console.log('Listening on 8888');
