@@ -236,6 +236,7 @@ export default function Dashboard() {
   async function selectCollection(c) {
     console.log("selecting collection " + c.id + " with items " + c.items)
     setCurrentCollection(c)
+    setCollectionName(c.id)
   }
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
