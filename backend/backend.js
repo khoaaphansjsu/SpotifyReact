@@ -172,17 +172,17 @@ app.get('/getMyCollections', async (req, res) => {
   const userId = req.query.userId;
   console.log("getMyCollections " + userId)
   var result
-  const superplaylistsRef = await db.collection("users").doc(userId).collection('super').get();
-  let superplaylists = await superplaylistsRef.docs.map( async (doc) => {
-    let res = {};
+  const exercisesRef = await db.collection("users").doc(userId).collection('super').get();
+  let exercises = await exercisesRef.docs.map( async (doc) => {
+    let res = await doc.data()
     res.id = doc.id;
-    res.items = await doc.data();
     console.log(res);
     return res;
   } )
-  result = await Promise.all(superplaylists)
+  result = await Promise.all(exercises)
   console.log("promises" + result);
-  res.send(result);
+  res.json(result);
+  console.log("promises" + Promise.all(exercises));
 
   // const doc = await db.collection('users').doc('ularavind@hotmail.com').get()
   // console.log(doc.id, '=>', doc);
@@ -191,30 +191,17 @@ app.get('/getMyCollections', async (req, res) => {
   // res.json(data);
 })
 
-
-
-//add thing to collection
-app.get('/addCollection', async (req, res) => {
-  const userId = req.query.userId;
-  const collection  = req.query.collectionName;
-  const addTo = req.query.thingToAdd
-  db.collection('users').doc(userId).collection('super').doc(collection).update(
-  {links:
-          firebase.firestore.FieldValue.arrayUnion(addTo)
-  })
+app.get('/addCollection', (req, res) => {
   console.log("adding a collection", req)
 })
 
-//remove thing from collection
-app.get('/removeCollection', async (req, res) => {
+function add(email, collectionName, thingToAdd) {
   const userId = req.query.userId;
-  const collection  = req.query.collectionName;
-  const addTo = req.query.thingToAdd
-  db.collection('users').doc(userId).collection('super').doc(collection).update(
-    {links:
-        firebase.firestore.FieldValue.arrayRemove(thingToRemove)
-    })
-})
+  db.collection('users').doc(email).collection('super').doc(collectionName).update(
+  {links:
+          firebase.firestore.FieldValue.arrayUnion(thingToAdd)
+  })
+}
 
 app.get('/createEmpty', async (req, res) => {
   const userId = req.query.userEmail;
