@@ -169,7 +169,6 @@ async function getMyCollections(userId) {
   console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
   const data = await res.json();
-  console.log("my collections "+ Object.values(data));
   return Object.values(data);
 }
 
@@ -186,49 +185,6 @@ async function getCollection(uuid) {
 // async function searchSpotifyPlaylists(access_token, keyword) {
 //   console.log("searching public spotify playlists with for " + keyword + "token:"+access_token)
 // }
-
-function collectionCard(keyValue) {
-  let info = "";
-  let artisStuff = "";
-  const id = keyValue[0]
-  const musicItem = keyValue[1]
-  console.log("collection card id "+ id + " value " + musicItem)
-  if(musicItem.tracks) {
-    let artistStuff = ""
-    info = 
-      (<Typography variant="body2" color="textSecondary" component="p">
-        Tracks Total: {musicItem.tracks.total}
-      </Typography>)
-  }
-  if(musicItem.topSongsNumber) {
-    artisStuff = (
-      <>
-      <IconButton aria-label="add to favorites">
-        <UpIcon />
-      </IconButton>
-      <IconButton aria-label="add to favorites">
-        <DownIcon />
-      </IconButton>
-      </>
-    )
-  }
-  return (
-    <Card style={{display: 'flex', margin: "5px"}}>
-      <CardContent>
-        <Typography gutterBottom variant="h7" component="h5">
-          {""+id}
-        </Typography>
-        {info}
-      </CardContent>
-      <CardActions disableSpacing disableSpacing style={{"margin-left": "auto"}}>
-        {artisStuff}
-        <IconButton aria-label="add to favorites">
-          <DeleteIcon />
-        </IconButton>
-      </CardActions>
-    </Card>
-  );
-}
 
 export default function Dashboard() {
   var qs = new URLSearchParams(useLocation().search);
@@ -252,7 +208,8 @@ export default function Dashboard() {
           let res = await getMyCollections(data.email);
           console.log("my collections ", res)
           setCollections(res)
-          setEmail(data.id)
+          setCurrentCollection(res[0])
+          setEmail(data.email)
           console.log(data)
           return data
         })
@@ -269,18 +226,7 @@ export default function Dashboard() {
   const [ mode, setMode ] =                   React.useState("My Playlists");
 
   async function selectCollection(c) {
-    // let res = await getCollection(c[1]);
     console.log("selecting collection " + c.id + " with items " + c.items)
-    // let newCollection = Object.entries(c.items).map(playlist => {
-    //   let res = {}
-    //   if(playlist[1].length!=1) {
-    //     res = {id: playlist[0], tracks: {total:playlist.length, links:playlist}}
-    //   }
-    //   else {
-    //     res = {id: playlist[0], link: playlist[0]}
-    //   }
-    //   return res
-    // })
     setCurrentCollection(c)
   }
   React.useEffect(async () => {
@@ -292,10 +238,10 @@ export default function Dashboard() {
     setMyPlaylists(data);
     setSearchResults(["result1", "result2"]);
     let musicObjects = {}
-    musicObjects["test playlist"] = {tracks:{total:5,  links:["initialLink1","initialLink2"]}}
-    musicObjects["test artist"] =   {tracks:{total:10, links:["initialLink3","initialLink4"]}, topSongsNumber: 10}
-    musicObjects["test song"] =     {link:"initialSongLink"}
-    setCurrentCollection({id:"new collection", items: musicObjects})
+    // musicObjects["test playlist"] = {links:["initialLink1","initialLink2"]}
+    // musicObjects["test artist"] =   {links:["initialLink3","initialLink4"], topSongsNumber: 10}
+    // musicObjects["test song"] =     {links:["initialSongLink"]}
+    setCurrentCollection({id:"loading", items: musicObjects})
   }, [])
 
   async function logOut(){
@@ -342,49 +288,106 @@ export default function Dashboard() {
     return ["bad state"]
   }
 
-  async function addCollection(userId, collectionName, thingToadd) {
+  async function getAllTracksFromId(musicObj) {
+    let ids = []
+    let res = null;
+    if(musicObj.type==="playlist") {
+      // res = await fetch("https://api.spotify.com/v1/playlists/"+musicObj.id)
+      ids = res
+    }
+  }
+
+  async function addToCollection(thingToadd) {
     // only add to our view if it is not ther already
+    console.log("adding element " + thingToadd + " to current collection " + current_collection.id)
     let newCollectionItems = current_collection.items
-    newCollectionItems.put(collectionName, thingToadd)
-    setCurrentCollection({name:current_collection.id, items:newCollectionItems})
-    let res = await fetch("https://localhost:8888/addCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToadd)
+    newCollectionItems[thingToadd.name] = thingToadd
+    setCurrentCollection({id:current_collection.id, items:newCollectionItems})
+    let res = await fetch("https://localhost:8888/addCollections?userId="+email + "&arg2=" + current_collection.id + "&arg=" + thingToadd.name)
   }
   
-  async function removeCollection(userId, collectionName, thingToRemove) {
-    let newCollectionItems = current_collection.items
-    newCollectionItems.remove(collectionName)
-    setCurrentCollection({name:current_collection.id, items:newCollectionItems})
-    let res = await fetch("https://localhost:8888/removeCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToRemove)
+  async function removeFromCollection(idToRemove) {
+    console.log("removing " + idToRemove)
+    let newCollectionItems = current_collection.items   //.filter(x=>{return x.id==thingToRemove.name})
+    delete newCollectionItems[idToRemove]
+    setCurrentCollection({id:current_collection.id, items:newCollectionItems})
+    let res = await fetch("https://localhost:8888/removeCollections?userId="+email + "&arg2=" + current_collection.id + "&arg=" + idToRemove)
   }
 
-    async function exportPlaylist(access_token) {
-      console.log("exporting collection " + current_collection + " to user " + email)
-      let res = await fetch("https://api.spotify.com/v1/users/"+ email + "/playlists" , {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-        "Authorization": "Bearer "+access_token,
-        "Content-Type": "application/json",
-        "Accept": "application/json"},
-      data: {
-       "name" : "Spotify react",
-       "public" : false}
-      })
-      let data = await res.json();
-      console.log("exported result " + data)
-      if(data.items)
-        return data.items
-      return []
+  async function exportPlaylist(access_token) {
+    console.log("exporting collection " + current_collection + " to user " + email)
+    let res = await fetch("https://api.spotify.com/v1/users/"+ email + "/playlists" , {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      "Authorization": "Bearer "+access_token,
+      "Content-Type": "application/json",
+      "Accept": "application/json"},
+    data: {
+      "name" : "Spotify react",
+      "public" : false}
+    })
+    let data = await res.json();
+    console.log("exported result " + data)
+    if(data.items)
+      return data.items
+    return []
+  }
+  function collectionCard(keyValue) {
+    let info = "";
+    let artisStuff = "";
+    const id = keyValue[0]
+    const musicItem = keyValue[1]
+    console.log("collection card id "+ id + " value " + musicItem)
+    if(musicItem.length>1) {
+      let artistStuff = ""
+      info = 
+        (<Typography variant="body2" color="textSecondary" component="p">
+          Tracks Total: {musicItem.length}
+        </Typography>)
     }
-
+    if(musicItem.topSongsNumber) {
+      artisStuff = (
+        <>
+        <IconButton aria-label="add to favorites">
+          <UpIcon />
+        </IconButton>
+        <IconButton aria-label="add to favorites">
+          <DownIcon />
+        </IconButton>
+        </>
+      )
+    }
+    return (
+      <Card style={{display: 'flex', margin: "5px"}}>
+        <CardContent>
+          <Typography gutterBottom variant="h7" component="h5">
+            {""+id}
+          </Typography>
+          {info}
+        </CardContent>
+        <CardActions disableSpacing disableSpacing style={{"margin-left": "auto"}}>
+          {artisStuff}
+          <IconButton aria-label="add to favorites" onClick={()=>removeFromCollection(id)}>
+            <DeleteIcon />
+          </IconButton>
+        </CardActions>
+      </Card>
+    );
+  }
+  
   function SearchCard(musicObject) {
     let playliststuff = null
-    if(musicObject.tracks) 
+    let links = []
+    if(musicObject.tracks)  {
       playliststuff = (
         <Typography variant="body2" color="textSecondary" component="p">
             Tracks Total: {musicObject.tracks.total}
           </Typography>
-    )
+      )
+      console.log("musicObject.tracks " + musicObject)
+      // links = Object.musicObject.tracks.map(t=>{return t.id})
+    }
     return (
       <Card style={{maxWidth: "225px", display: 'flex', margin: "5px"}}>
         <CardContent>
@@ -394,7 +397,7 @@ export default function Dashboard() {
           {playliststuff}
         </CardContent>
         <CardActions disableSpacing style={{"margin-left": "auto"}}>
-          <IconButton aria-label="add to favorites" onclick={()=>addCollection(email, current_collection.id, musicObject.name)}>
+          <IconButton aria-label="add to favorites" onClick={()=>addToCollection(musicObject)}>
             <AddIcon />
           </IconButton>
         </CardActions>
