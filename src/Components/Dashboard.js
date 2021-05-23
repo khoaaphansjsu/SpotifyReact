@@ -36,7 +36,7 @@ import DownIcon from "@material-ui/icons/ExpandMore";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 // search bar
 import SearchBar from "material-ui-search-bar";
-import { FiberSmartRecordSharp } from '@material-ui/icons';
+import { FiberSmartRecordSharp, LocalConvenienceStoreOutlined } from '@material-ui/icons';
 
 import Login  from "./Login.js";
 require("firebase/firestore");
@@ -138,6 +138,29 @@ async function getMySpotifyPlaylists(access_token) {
   return []
 }
 
+//Search for an artist using keyword q, and access token
+async function searchItem (access_token, search_key, search_type) {
+  let res = await fetch(`https://api.spotify.com/v1/search?q=${search_key}&type=${search_type}&limit=1`, {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      "Authorization": "Bearer "+access_token,
+      "Content-Type": "application/json",
+      "Accept": "application/json"},
+    param: {
+      "q": search_key, 
+      "type": search_type,
+      "limit": 1
+    }
+  })
+  console.log("printing res ");
+  let data = await res.json();
+  console.log("printing data val " + JSON.stringify(data));
+  if(data.items)
+    return data.items
+  return []
+}
+
 async function getMyCollections(userId) {
   console.log("get my collections ruinn")
   let res = await fetch("https://localhost:8888/getMyCollections?userId="+userId)
@@ -162,7 +185,6 @@ async function searchSpotifyPlaylists(access_token, keyword) {
 }
 
 function collectionCard(musicItem) {
-  console.log("music item " + musicItem.name)
   let info = "";
   let artisStuff = "";
   if(musicItem.tracks) {
@@ -185,7 +207,7 @@ function collectionCard(musicItem) {
     )
   }
   return (
-    <Card style={{maxWidth: 345, display: 'flex', margin: "5px"}}>
+    <Card style={{display: 'flex', margin: "5px"}}>
       <CardContent>
         <Typography gutterBottom variant="h7" component="h5">
           {""+musicItem.name}
@@ -209,9 +231,8 @@ export default function Dashboard() {
   while (!result.done) {
     result = it.next();
   }
-
-  const [ loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
-  const [ email, setEmail ] =      React.useState(null);
+  const [email, setEmail] = React.useState(null)
+  const [loggedin, setLoggedin] = React.useState(qs.get("access_token")!=null); 
   function getCurrentUser(token) {
     return fetch("https://api.spotify.com/v1/me", {
         method: 'GET',
@@ -225,8 +246,8 @@ export default function Dashboard() {
           let res = await getMyCollections(data.email);
           console.log("a result", res)
           setCollections(res)
-          setEmail(data.email)
-          console.log("the email is set to " + data.email)
+          setEmail(data.id)
+          console.log(data)
           return data
         })
       })
@@ -248,6 +269,9 @@ export default function Dashboard() {
   React.useEffect(async () => {
     getCurrentUser(qs.get("access_token"));
     let data = await getMySpotifyPlaylists(access_token);
+
+    // let data = await searchItem(access_token, "hello", "playlist");
+    //let data = await searchItem(access_token, "rick", "artist");
     console.log("got my spotify playlists " + data);
     setMyPlaylists(data);
     setSearchResults(["result1", "result2"]);
@@ -264,7 +288,7 @@ export default function Dashboard() {
     //window.localStorage.clear('refresh');
     window.localStorage.clear();
     //redirect to spotify here
-    window.location.replace("https://www.spotify.com/us/");
+    window.location.replace("http://localhost:3000/");
     //cannot go back one page
     window.history.forward(-1);
   }
@@ -308,16 +332,34 @@ export default function Dashboard() {
     let res = await fetch("https://localhost:8888/removeCollections?userId="+userId + "&arg2=" + collectionName + "&arg=" + thingToRemove)
   }
 
+    async function exportPlaylist(access_token) {
+      let res = await fetch("https://api.spotify.com/v1/users/"+ email + "/playlists" , {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        "Authorization": "Bearer "+access_token,
+        "Content-Type": "application/json",
+        "Accept": "application/json"},
+      data: {
+       "name" : "Spotify react",
+       "public" : false}
+      })
+      let data = await res.json();
+      console.log("exported result " + data)
+      if(data.items)
+        return data.items
+      return []
+    }
+
   function ImgMediaCard(musicObject) {
     let playliststuff = null
     if(musicObject.tracks) 
-      playliststuff = (
+      playliststuff = ( 
         <Typography variant="body2" color="textSecondary" component="p">
-            Tracks Total: {musicObject.tracks.total}
           </Typography>
     )
     return (
-      <Card style={{maxWidth: 345, display: 'flex', margin: "5px"}}>
+      <Card style={{maxWidth: "225px", display: 'flex', margin: "5px"}}>
         <CardContent>
           <Typography gutterBottom variant="h7" component="h5">
             {""+musicObject.name}
@@ -325,12 +367,19 @@ export default function Dashboard() {
           {playliststuff}
         </CardContent>
         <CardActions disableSpacing style={{"margin-left": "auto"}}>
-          <IconButton aria-label="add to favorites" onclick={()=>addCollection(email, current_collection.name, musicObject.name)}>
+          <IconButton aria-label="add to favorites" onclick={()=>addCollection(email, current_collection.name, musicObject.id)}>
             <AddIcon />
           </IconButton>
         </CardActions>
       </Card>
     );
+  }
+
+  async function deleteCollection(current_collection){
+    await db.collection(email).doc(current_collection).delete();
+      
+    //deletes from front end
+    setCurrentCollection({name: collections[0].name, items:musicObjects})
   }
 
   function SearchArea() {
@@ -399,7 +448,8 @@ export default function Dashboard() {
                     {""+current_collection.name}
                   </Typography>
                   {Object.values(current_collection.items).map(p=>{return collectionCard(p)})}
-                  <Button>Export</Button>
+                  <Button onClick={() => exportPlaylist()}> Export</Button>
+                  <Button onClick={() => deleteCollection()}> Delete Collection</Button>
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6} lg={6}>
