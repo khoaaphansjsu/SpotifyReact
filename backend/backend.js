@@ -18,8 +18,8 @@ var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 const { CompareArrowsOutlined } = require('@material-ui/icons');
 
-var client_id = '92e926db9a184761aa10331a81c59ba3'; // Your client id
-var client_secret = '97704c4daa5a44a6b222a76b44f386d8'; // Your secret
+var client_id = ''; // Your client id
+var client_secret = ''; // Your secret
 var redirect_uri = 'https://localhost:8888/callback'; // Your redirect uri
 
 /**
